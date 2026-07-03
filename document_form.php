@@ -227,10 +227,11 @@ require __DIR__ . '/layout/header.php';
 <?php
 // Pass products to JS
 $products_json = json_encode($products, JSON_HEX_TAG);
+$line_idx = count($lines);
 $extra_js = <<<JS
 <script>
 const products = $products_json;
-let lineIdx = <?= max(count($lines), 0) ?>;
+let lineIdx = $line_idx;
 
 // Product search
 const searchInput = document.getElementById('product_search');
