@@ -12,7 +12,12 @@ define('DB_CHARSET', 'utf8mb4');
 
 // --- App ---
 define('APP_NAME', 'Document Flow');
-define('BASE_URL', '/document-flow');   // No trailing slash. Adjust if hosted at root: ''
+$scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+$baseUrl = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+if ($baseUrl === '/' || $baseUrl === '.') {
+    $baseUrl = '';
+}
+define('BASE_URL', $baseUrl);   // No trailing slash. Auto-detects root or subfolder hosting.
 
 // --- Company defaults (used in document headers) ---
 define('COMPANY', [

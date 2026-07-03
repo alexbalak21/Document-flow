@@ -21,14 +21,15 @@ mysql -u root -p document_flow < SQL/schema.sql
 
 ## 2. Configure
 
-Edit `config.php`:
+Edit `config.php` if you need to change the database credentials or company details:
 
 ```php
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'document_flow');
 define('DB_USER', 'your_user');
 define('DB_PASS', 'your_password');
-define('BASE_URL', '/document-flow');  // '' if hosted at root
+// BASE_URL is auto-detected from the request path.
+// Override only if you need a fixed custom value.
 ```
 
 Update the `COMPANY` array with your real details.
