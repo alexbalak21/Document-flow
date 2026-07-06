@@ -1,113 +1,58 @@
-# Document Flow — Setup Guide
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-## Requirements
-- PHP 8.0+
-- MySQL 5.7+ / MariaDB 10.3+
-- A web server (Apache / Nginx / `php -S`)
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-## 1. Database setup
+## About Laravel
 
-Create the database, then run the SQL files **in this order**:
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-```sql
-CREATE DATABASE document_flow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
+
+## Learning Laravel
+
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+
+## Agentic Development
+
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
 
 ```bash
-mysql -u root -p document_flow < SQL/products.sql
-mysql -u root -p document_flow < SQL/products_data.sql
-mysql -u root -p document_flow < SQL/schema.sql
+composer require laravel/boost --dev
+
+php artisan boost:install
 ```
 
-## 2. Configure
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-Edit `config.php` if you need to change the database credentials or company details:
+## Contributing
 
-```php
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'document_flow');
-define('DB_USER', 'your_user');
-define('DB_PASS', 'your_password');
-// BASE_URL is auto-detected from the request path.
-// Override only if you need a fixed custom value.
-```
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-Update the `COMPANY` array with your real details.
+## Code of Conduct
 
-## 3. Change the default password
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-The default admin account is `admin@novocib.com` / `changeme123`.
+## Security Vulnerabilities
 
-**Change it immediately** by running:
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-```php
-<?php
-echo password_hash('your_new_password', PASSWORD_BCRYPT, ['cost' => 12]);
-```
+## License
 
-Then update the `users` table:
-
-```sql
-UPDATE users SET password_hash = '<hash>' WHERE email = 'admin@novocib.com';
-```
-
-Or add another user:
-
-```sql
-INSERT INTO users (email, password_hash, full_name)
-VALUES ('you@company.com', '<hash>', 'Your Name');
-```
-
-## 4. Deploy
-
-### Local dev (quick)
-```bash
-cd /path/to/document-flow
-php -S localhost:8080
-# Visit http://localhost:8080/login.php
-```
-
-### Apache
-Place the folder in your `htdocs` / `www`. The `BASE_URL` in `config.php`
-must match the subfolder (e.g. `/document-flow`).
-
-### Root domain / Nginx
-Set `define('BASE_URL', '');` in `config.php`.
-
-## File structure
-
-```
-document-flow/
-├── config.php            ← Edit this first
-├── db.php                ← PDO connection + helpers
-├── auth.php              ← Session guard
-├── login.php / logout.php
-├── index.php             ← Dashboard
-├── clients.php           ← Client list + create/edit modal
-├── client_save.php       ← Client POST handler
-├── documents.php         ← Document list with filters
-├── document_form.php     ← Create / edit document
-├── document_save.php     ← Document POST handler
-├── document_view.php     ← Printable document (quote or invoice)
-├── document_status.php   ← Quick status update
-├── products.php          ← Read-only product catalog
-├── layout/
-│   ├── header.php        ← Navbar + sidebar
-│   └── footer.php
-├── SQL/
-│   ├── products.sql
-│   ├── products_data.sql
-│   └── schema.sql        ← Run this last
-└── img/
-    └── logo.png
-```
-
-## Workflow
-
-1. **Login** → `login.php`
-2. **Add clients** → Clients → New client
-3. **Create a document** → New document → pick type (Quote / Invoice / Order confirmation)
-4. **Add line items** by searching your product catalog or typing free lines
-5. **Save & view** → renders the printable document
-6. **Print / Save PDF** → browser print dialog → "Save as PDF"
-7. **Update status** → sent / accepted / paid directly from the view page
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
