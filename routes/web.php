@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TemplateController;
 
 // Auth
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login')->middleware('guest');
@@ -12,4 +13,8 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Protected
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Templates
+    Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
+    Route::post('/templates/install', [TemplateController::class, 'install'])->name('templates.install');
 });
