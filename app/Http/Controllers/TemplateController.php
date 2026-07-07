@@ -3,25 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\DocumentType;
+use Illuminate\Support\Facades\DB;
 
 class TemplateController extends Controller
 {
-    /**
-     * List all installed templates.
-     */
     public function index()
     {
-        $templates = DocumentType::orderBy('name')->get();
+        $templates = DocumentType::orderBy('name', 'asc')->get();
         return view('templates.index', compact('templates'));
     }
 
-    /**
-     * Scan storage/app/templates/ and install any template not yet in the DB.
-     */
     public function install()
     {
-        $installed  = 0;
-        $errors     = [];
+        $installed = 0;
+        $errors    = [];
 
         $basePath = storage_path('app/templates');
 
@@ -48,26 +43,32 @@ class TemplateController extends Controller
                 continue;
             }
 
-            // Skip if already installed (same slug + version)
-            $exists = DocumentType::where('slug', $manifest['slug'])
-                ->where('version', $manifest['version'])
+            $slug    = $manifest['slug'];
+            $version = $manifest['version'] ?? '1.0';
+
+            // Skip if already installed
+            $exists = DB::table('document_types')
+                ->where('slug', '=', $slug)
+                ->where('version', '=', $version)
                 ->exists();
 
             if ($exists) {
                 continue;
             }
 
-            DocumentType::create([
+            DB::table('document_types')->insert([
                 'name'          => $manifest['name'],
-                'slug'          => $manifest['slug'],
+                'slug'          => $slug,
                 'description'   => $manifest['description'] ?? null,
-                'version'       => $manifest['version'] ?? '1.0',
+                'version'       => $version,
                 'template_path' => $folder . '/' . $manifest['template'],
                 'config_path'   => $folder . '/' . $manifest['form'],
                 'preview_image' => isset($manifest['preview'])
                     ? $folder . '/' . $manifest['preview']
                     : null,
                 'active'        => true,
+                'created_at'    => now(),
+                'updated_at'    => now(),
             ]);
 
             $installed++;
