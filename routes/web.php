@@ -13,6 +13,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Protected
 Route::middleware('auth')->group(function () {
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     // Templates
@@ -20,10 +21,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/install', [TemplateController::class, 'install'])->name('templates.install');
 
     // Documents
-    Route::get('/documents/{slug}/create', [DocumentController::class, 'create'])->name('documents.create');
+    Route::get('/documents/{slug}/create',   [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/documents/{slug}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
+    Route::post('/documents/{slug}/store',   [DocumentController::class, 'store'])->name('documents.store');
 
     // History
-    Route::get('/history', [DocumentController::class, 'history'])->name('documents.history');
-    Route::get('/history/{document}', [DocumentController::class, 'show'])->name('documents.show');
+    Route::get('/history',             [DocumentController::class, 'history'])->name('documents.history');
+    Route::get('/history/{document}',  [DocumentController::class, 'show'])->name('documents.show');
+
+    // Status
+    Route::post('/documents/{document}/status',  [DocumentController::class, 'updateStatus'])->name('documents.status');
+
+    // Convert quote → invoice
+    Route::post('/documents/{document}/convert', [DocumentController::class, 'convert'])->name('documents.convert');
+
 });
