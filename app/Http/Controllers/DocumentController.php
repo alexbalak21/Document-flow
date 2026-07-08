@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class DocumentController extends Controller
 {
@@ -16,30 +16,57 @@ class DocumentController extends Controller
 
     public function create(string $slug)
     {
-        $type     = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
-        $form     = json_decode(file_get_contents($type->config_path), true);
-        $products = Product::orderBy('name')->get();
+        $type      = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $form      = json_decode(file_get_contents($type->config_path), true);
+        $products  = Product::orderBy('name')->get();
+        $customers = Customer::orderBy('name')->get();
 
-        return view('documents.create', compact('type', 'form', 'products'));
+        return view('documents.create', compact('type', 'form', 'products', 'customers'));
     }
 
     // -------------------------------------------------------------------------
-    // SAVE & PREVIEW
+    // SAVE
     // -------------------------------------------------------------------------
 
     public function store(Request $request, string $slug)
     {
         $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
 
-        $data = $request->except('_token');
-        $data = $this->computeTotals($slug, $data);
+        $data = $request->except(['_token', 'customer_id', 'save_customer']);
 
+        // --- Handle customer ---
+        $customerId = null;
+
+        if ($request->filled('customer_id')) {
+            // Existing customer selected
+            $customerId = $request->customer_id;
+
+            // Optionally update the customer fields if they changed
+            $customer = Customer::find($customerId);
+            if ($customer) {
+                $customer->update($this->extractCustomerFields($data));
+            }
+        } else {
+            // No existing customer selected — save as new if name is filled
+            $fields = $this->extractCustomerFields($data);
+            if (! empty($fields['name'])) {
+                $customer   = Customer::create($fields);
+                $customerId = $customer->id;
+            }
+        }
+
+        $data = $this->computeTotals($slug, $data);
         $html = $this->renderHtml($type, $data);
 
         $reference = $data[$slug . '_number'] ?? $data['invoice_number'] ?? $data['quote_number'] ?? null;
 
+        $parentId = session('convert_from');
+        session()->forget(['convert_from', 'convert_data']);
+
         $document = Document::create([
             'document_type_id' => $type->id,
+            'customer_id'      => $customerId,
+            'parent_id'        => $parentId,
             'title'            => $type->name . ($reference ? ' #' . $reference : ''),
             'reference'        => $reference,
             'status'           => Document::STATUS_DRAFT,
@@ -47,18 +74,23 @@ class DocumentController extends Controller
             'html_snapshot'    => $html,
         ]);
 
+        // If this was a conversion, mark the quote as invoiced
+        if ($parentId) {
+            Document::find($parentId)?->update(['status' => Document::STATUS_INVOICED]);
+        }
+
         return redirect()->route('documents.show', $document)
             ->with('success', $type->name . ' saved successfully.');
     }
 
     // -------------------------------------------------------------------------
-    // PREVIEW (opens in new tab, does NOT save)
+    // PREVIEW (no save)
     // -------------------------------------------------------------------------
 
     public function preview(Request $request, string $slug)
     {
         $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
-        $data = $request->except('_token');
+        $data = $request->except(['_token', 'customer_id', 'save_customer']);
         $data = $this->computeTotals($slug, $data);
         $html = $this->renderHtml($type, $data);
 
@@ -66,7 +98,7 @@ class DocumentController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // SHOW (render saved html_snapshot)
+    // SHOW
     // -------------------------------------------------------------------------
 
     public function show(Document $document)
@@ -80,10 +112,10 @@ class DocumentController extends Controller
 
     public function history(Request $request)
     {
-        $types       = DocumentType::orderBy('name')->get();
+        $types        = DocumentType::orderBy('name')->get();
         $selectedSlug = $request->query('type');
 
-        $query = Document::with('documentType')->orderByDesc('created_at');
+        $query = Document::with(['documentType', 'customer'])->orderByDesc('created_at');
 
         if ($selectedSlug) {
             $query->whereHas('documentType', fn($q) => $q->where('slug', $selectedSlug));
@@ -104,7 +136,6 @@ class DocumentController extends Controller
             'status' => ['required', 'in:draft,sent,accepted,rejected,invoiced,paid,cancelled'],
         ]);
 
-        // Prevent overwriting invoiced status manually
         if ($document->status === Document::STATUS_INVOICED) {
             return back()->with('error', 'This quote has already been converted to an invoice.');
         }
@@ -139,28 +170,44 @@ class DocumentController extends Controller
             return back()->with('error', 'Invoice template is not installed.');
         }
 
-        // Pre-fill the invoice form with quote data
         $data = $document->json_data;
 
-        // Swap quote_number for invoice_number if needed
         if (isset($data['quote_number']) && ! isset($data['invoice_number'])) {
             $data['invoice_number'] = '';
         }
 
-        // Store the parent_id so the form can link back
-        session(['convert_from' => $document->id, 'convert_data' => $data]);
+        session([
+            'convert_from' => $document->id,
+            'convert_data' => $data,
+            'convert_customer_id' => $document->customer_id,
+        ]);
 
         return redirect()->route('documents.create', 'invoice')
             ->with('info', 'Quote #' . $document->reference . ' loaded. Review and save the invoice.');
     }
 
     // -------------------------------------------------------------------------
-    // INTERNAL HELPERS
+    // HELPERS
     // -------------------------------------------------------------------------
+
+    private function extractCustomerFields(array $data): array
+    {
+        return [
+            'name'       => $data['customer_name']       ?? '',
+            'company'    => $data['customer_company']    ?? null,
+            'department' => $data['customer_department'] ?? null,
+            'street'     => $data['customer_street']     ?? null,
+            'city'       => $data['customer_city']       ?? null,
+            'zip'        => $data['customer_zip']        ?? null,
+            'country'    => $data['customer_country']    ?? null,
+            'phone'      => $data['customer_phone']      ?? null,
+            'email'      => $data['customer_email']      ?? null,
+            'vat_number' => $data['customer_vat_number'] ?? null,
+        ];
+    }
 
     private function computeTotals(string $slug, array $data): array
     {
-        // Both invoice and quote share the same product calculation
         if (in_array($slug, ['invoice', 'quote'])) {
             $qty       = (float) ($data['product_quantity']   ?? 0);
             $unitPrice = (float) ($data['product_unit_price'] ?? 0);
@@ -185,7 +232,6 @@ class DocumentController extends Controller
 
         $html = str_replace('{{style}}', $css, $html);
 
-        // Resolve optional blocks {{#field}}...{{/field}}
         $html = preg_replace_callback(
             '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
             function ($matches) use ($data) {
@@ -199,7 +245,6 @@ class DocumentController extends Controller
             $html = str_replace('{{' . $key . '}}', htmlspecialchars((string) $value), $html);
         }
 
-        // Remove unfilled placeholders
         $html = preg_replace('/\{\{.*?\}\}/', '', $html);
 
         return $html;

@@ -10,6 +10,7 @@ class Document extends Model
 {
     protected $fillable = [
         'document_type_id',
+        'customer_id',
         'title',
         'reference',
         'status',
@@ -22,16 +23,14 @@ class Document extends Model
         'json_data' => 'array',
     ];
 
-    // Status constants
-    const STATUS_DRAFT    = 'draft';
-    const STATUS_SENT     = 'sent';
-    const STATUS_ACCEPTED = 'accepted';
-    const STATUS_REJECTED = 'rejected';
-    const STATUS_INVOICED = 'invoiced'; // quote was converted
-    const STATUS_PAID     = 'paid';
+    const STATUS_DRAFT     = 'draft';
+    const STATUS_SENT      = 'sent';
+    const STATUS_ACCEPTED  = 'accepted';
+    const STATUS_REJECTED  = 'rejected';
+    const STATUS_INVOICED  = 'invoiced';
+    const STATUS_PAID      = 'paid';
     const STATUS_CANCELLED = 'cancelled';
 
-    // Badge color per status
     public static array $statusColors = [
         'draft'     => 'secondary',
         'sent'      => 'primary',
@@ -47,13 +46,16 @@ class Document extends Model
         return $this->belongsTo(DocumentType::class);
     }
 
-    /** The quote this invoice was converted from */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Document::class, 'parent_id');
     }
 
-    /** The invoice generated from this quote */
     public function convertedInvoice(): HasOne
     {
         return $this->hasOne(Document::class, 'parent_id');
