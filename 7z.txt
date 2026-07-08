@@ -1,0 +1,1 @@
+7z a -tzip Resume-Editor.zip . "-xr!vendor" "-xr!node_modules" "-xr!.env"
