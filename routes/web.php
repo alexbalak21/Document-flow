@@ -1,26 +1,42 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResumeController;
+use App\Http\Controllers\ExperienceController;
+use App\Http\Controllers\EducationController;
+use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\SkillController;
+use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\SoftSkillController;
+use App\Http\Controllers\SectionController;
+use App\Http\Controllers\MarkdownController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\TemplateController;
-use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\CustomerController;
+use Illuminate\Support\Facades\Auth;
 
-// Auth
-Route::get('/login', [LoginController::class, 'showLogin'])->name('login')->middleware('guest');
-Route::post('/login', [LoginController::class, 'login']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// Root: redirect authenticated users to their CVs, guests to welcome page
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('resumes.index');
+    }
+    return view('welcome');
+});
 
-// Protected
+// Dashboard: redirect straight to resumes list
+Route::get('/dashboard', function () {
+    return redirect()->route('resumes.index');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
 Route::middleware('auth')->group(function () {
 
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    // User profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Templates
-    Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
-    Route::post('/templates/install', [TemplateController::class, 'install'])->name('templates.install');
+    // Resumes
+    Route::resource('resumes', ResumeController::class);
 
+<<<<<<< HEAD
     // Document type landing page
     Route::get('/documents/{slug}', [DocumentController::class, 'page'])->name('documents.page');
 
@@ -43,5 +59,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/customers/{customer}/edit',   [CustomerController::class, 'edit'])->name('customers.edit');
     Route::put('/customers/{customer}',        [CustomerController::class, 'update'])->name('customers.update');
     Route::get('/api/customers',               [CustomerController::class, 'list'])->name('customers.list');
+=======
+    // Nested resources (scoped to resume)
+    Route::resource('resumes.experiences',    ExperienceController::class)->except(['index', 'show']);
+    Route::resource('resumes.educations',     EducationController::class)->except(['index', 'show']);
+    Route::resource('resumes.certifications', CertificationController::class)->except(['index', 'show']);
+    Route::resource('resumes.skills',         SkillController::class)->except(['index', 'show']);
+    Route::resource('resumes.languages',      LanguageController::class)->except(['index', 'show']);
+    Route::resource('resumes.softskills',     SoftSkillController::class)->except(['index', 'show']);
+    Route::resource('resumes.sections',       SectionController::class)->except(['index', 'show']);
+>>>>>>> 31cafc1165c946cd67ea18900825a33a70b7f07b
 
+    // Markdown import / export
+    Route::get('resumes/{resume}/export-md',  [MarkdownController::class, 'export'])->name('resumes.export-md');
+    Route::post('resumes/import-md',          [MarkdownController::class, 'import'])->name('resumes.import-md');
 });
+
+require __DIR__.'/auth.php';
