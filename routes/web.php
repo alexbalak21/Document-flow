@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CompanySettingsController;
 
 // Auth
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login')->middleware('guest');
@@ -37,6 +38,10 @@ Route::middleware('auth')->group(function () {
     // Status & Convert
     Route::post('/documents/{document}/status',  [DocumentController::class, 'updateStatus'])->name('documents.status');
     Route::post('/documents/{document}/convert', [DocumentController::class, 'convert'])->name('documents.convert');
+
+    // Company settings
+    Route::get('/settings/company', [CompanySettingsController::class, 'edit'])->name('settings.company');
+    Route::put('/settings/company', [CompanySettingsController::class, 'update'])->name('settings.company.update');
 
     // Customers
     Route::get('/customers',                   [CustomerController::class, 'index'])->name('customers.index');

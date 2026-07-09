@@ -1,0 +1,11 @@
+{
+    "name": "Quote",
+    "slug": "quote",
+    "version": "1.1",
+    "author": "Document Flow",
+    "description": "Standard quote / commercial proposal with full customer details",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "entities": ["customer", "product"]
+}

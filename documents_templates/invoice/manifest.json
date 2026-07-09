@@ -1,0 +1,11 @@
+{
+    "name": "Invoice",
+    "slug": "invoice",
+    "version": "1.2",
+    "author": "Document Flow",
+    "description": "Standard invoice with full customer details and one product line",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "entities": ["customer", "product"]
+}

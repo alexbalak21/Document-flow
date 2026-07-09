@@ -240,6 +240,12 @@
             <span class="nav-text">Templates</span>
         </a>
 
+        <a href="{{ route('settings.company') }}"
+           class="nav-item-link {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+            <i class="bi bi-gear"></i>
+            <span class="nav-text">Company Settings</span>
+        </a>
+
     </nav>
 
     {{-- Footer --}}

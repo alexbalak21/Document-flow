@@ -1,0 +1,36 @@
+[
+    {
+        "section": "Invoice",
+        "fields": [
+            {
+                "type": "text",
+                "name": "invoice_number",
+                "label": "Invoice Number",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "invoice_date",
+                "label": "Invoice Date",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "due_date",
+                "label": "Due Date",
+                "required": false
+            }
+        ]
+    },
+    {
+        "section": "Notes",
+        "fields": [
+            {
+                "type": "textarea",
+                "name": "notes",
+                "label": "Notes",
+                "required": false
+            }
+        ]
+    }
+]

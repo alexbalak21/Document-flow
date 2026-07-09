@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{invoice_number}}</title>
+    <style>{{style}}</style>
+</head>
+<body>
+
+    <div class="page">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="company-block">
+                {{#company_logo}}
+                <img src="{{company_logo}}" alt="{{company_name}}" class="brand-logo">
+                {{/company_logo}}
+                <div class="company-name">{{company_name}}</div>
+                <div class="company-address">
+                    {{company_street}}<br>
+                    {{company_zip}} {{company_city}} — {{company_country}}
+                </div>
+                <div class="company-contact">{{company_email}}</div>
+                <div class="company-legal">
+                    {{company_legal_form}} - Share capital: {{company_share_capital}}<br>
+                    SIRET: {{company_siret}}<br>
+                    VAT: {{company_vat_number}}
+                </div>
+            </div>
+            <div class="invoice-meta">
+                <div class="invoice-title">INVOICE</div>
+                <table class="meta-table">
+                    <tr><td>Number</td><td><strong>{{invoice_number}}</strong></td></tr>
+                    <tr><td>Date</td><td>{{invoice_date}}</td></tr>
+                    <tr><td>Due</td><td>{{due_date}}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Bill To -->
+        <div class="bill-to">
+            <div class="bill-to-label">Bill To</div>
+            <div class="customer-name">{{customer_name}}</div>
+            <div class="customer-company">{{customer_company}}</div>
+            <div class="customer-department">{{customer_department}}</div>
+            <div>{{customer_street}}</div>
+            <div>{{customer_zip}} {{customer_city}}</div>
+            <div>{{customer_country}}</div>
+            <div class="customer-contact">
+                {{#customer_phone}}<span>&#9990; {{customer_phone}}</span>{{/customer_phone}}
+                {{#customer_email}}<span>&#9993; {{customer_email}}</span>{{/customer_email}}
+            </div>
+            {{#customer_vat_number}}
+            <div class="customer-vat">VAT: {{customer_vat_number}}</div>
+            {{/customer_vat_number}}
+        </div>
+
+        <!-- Items table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Description</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Unit Price</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{product_reference}}</td>
+                    <td>{{product_name}}</td>
+                    <td class="text-right">{{product_quantity}}</td>
+                    <td class="text-right">{{product_unit_price}} {{company_currency_symbol}}</td>
+                    <td class="text-right">{{subtotal}} {{company_currency_symbol}}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals">
+            <table>
+                <tr><td>Subtotal</td><td class="text-right">{{subtotal}} {{company_currency_symbol}}</td></tr>
+                <tr><td>VAT ({{vat_rate}}%)</td><td class="text-right">{{vat_amount}} {{company_currency_symbol}}</td></tr>
+                <tr class="total-row">
+                    <td><strong>Total</strong></td>
+                    <td class="text-right"><strong>{{total}} {{company_currency_symbol}}</strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- VAT mention -->
+        {{#company_vat_mention}}
+        <div class="vat-mention">{{company_vat_mention}}</div>
+        {{/company_vat_mention}}
+
+        <!-- Notes -->
+        {{#notes}}
+        <div class="notes">
+            <div class="notes-label">Notes</div>
+            <div>{{notes}}</div>
+        </div>
+        {{/notes}}
+
+        <!-- Footer -->
+        <div class="doc-footer">
+            {{company_terms_text}}<br>
+            {{company_late_payment_text}} {{company_late_payment_fee_text}}
+        </div>
+
+    </div>
+
+</body>
+</html>

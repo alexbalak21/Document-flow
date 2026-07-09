@@ -279,6 +279,29 @@ class DocumentController extends Controller
 
         $html = str_replace('{{style}}', $css, $html);
 
+        // Inject company data from config/company.php
+        $company = config('company');
+        $data['company_name']               = $company['name']                  ?? '';
+        $data['company_logo']               = $company['logo']                  ?? '';
+        $data['company_legal_form']         = $company['legal_form']            ?? '';
+        $data['company_share_capital']      = $company['share_capital']         ?? '';
+        $data['company_street']             = $company['street']                ?? '';
+        $data['company_city']               = $company['city']                  ?? '';
+        $data['company_zip']               = $company['zip']                   ?? '';
+        $data['company_country']            = $company['country']               ?? '';
+        $data['company_siren']              = $company['siren']                 ?? '';
+        $data['company_siret']              = $company['siret']                 ?? '';
+        $data['company_vat_number']         = $company['vat_number']            ?? '';
+        $data['company_eori']               = $company['eori']                  ?? '';
+        $data['company_email']              = $company['email']                 ?? '';
+        $data['company_website']            = $company['website']               ?? '';
+        $data['company_currency']           = $company['default_currency']      ?? 'EUR';
+        $data['company_currency_symbol']    = $company['default_currency_symbol'] ?? '€';
+        $data['company_vat_mention']        = $company['vat_mention']           ?? '';
+        $data['company_terms_text']         = $company['terms_text']            ?? '';
+        $data['company_late_payment_text']  = $company['late_payment_text']     ?? '';
+        $data['company_late_payment_fee_text'] = $company['late_payment_fee_text'] ?? '';
+
         $html = preg_replace_callback(
             '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
             function ($matches) use ($data) {

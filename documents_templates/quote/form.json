@@ -1,0 +1,36 @@
+[
+    {
+        "section": "Quote",
+        "fields": [
+            {
+                "type": "text",
+                "name": "quote_number",
+                "label": "Quote Number",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "quote_date",
+                "label": "Quote Date",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "valid_until",
+                "label": "Valid Until",
+                "required": false
+            }
+        ]
+    },
+    {
+        "section": "Notes",
+        "fields": [
+            {
+                "type": "textarea",
+                "name": "notes",
+                "label": "Notes",
+                "required": false
+            }
+        ]
+    }
+]
