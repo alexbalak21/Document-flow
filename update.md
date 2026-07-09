@@ -1,7 +1,7 @@
-# Update — Customer Table & Picker
+# Update — Sidebar Navigation & Document Type Pages
 
 ## Task
-Add a customers table. When creating a Quote or Invoice, the user can select an existing customer or type a new one. Every customer is automatically saved to the database.
+Add a collapsible sidebar menu with per-document-type sections, a document type landing page with Create and "Create from" buttons, and an improved dashboard with per-type stats.
 
 ---
 
@@ -11,51 +11,60 @@ Add a customers table. When creating a Quote or Invoice, the user can select an 
 
 | File | Description |
 |---|---|
-| `database/migrations/2026_07_07_000005_create_customers_table.php` | Creates the `customers` table with all fields |
-| `database/migrations/2026_07_07_000006_add_customer_id_to_documents_table.php` | Adds `customer_id` foreign key to `documents` |
-| `app/Models/Customer.php` | Customer Eloquent model with `displayName` accessor |
-| `app/Http/Controllers/CustomerController.php` | index, store (HTML + JSON/AJAX), edit, update, list (API) |
-| `resources/views/customers/index.blade.php` | Customer list page with New Customer modal |
-| `resources/views/customers/_form.blade.php` | Shared form partial (used in modal and edit page) |
-| `resources/views/customers/edit.blade.php` | Edit customer page |
+| `resources/views/documents/page.blade.php` | Landing page for each document type. Shows Create button, Convert From button (when applicable), and last 10 documents of that type |
 
 ### Modified Files
 
 | File | What Changed |
 |---|---|
-| `app/Models/Document.php` | Added `customer_id` to fillable, added `customer()` BelongsTo relationship |
-| `app/Http/Controllers/DocumentController.php` | `create()` now passes `$customers`; `store()` saves or updates customer automatically; `convert()` passes `convert_customer_id` to session |
-| `resources/views/documents/create.blade.php` | Added customer picker dropdown at top; New Customer modal with AJAX save; auto-fill of form fields when customer is selected |
-| `routes/web.php` | Added customer routes: index, store, edit, update, and `/api/customers` JSON list |
+| `resources/views/layouts/auth.blade.php` | Full replacement — new fixed collapsible sidebar with document type groups, collapse toggle button, state saved in localStorage |
+| `resources/views/dashboard.blade.php` | Cleaner dashboard — 4 stat cards, per-type status breakdown cards, recent documents table |
+| `app/Http/Controllers/DashboardController.php` | Added `customerCount`, `typeStats` (per-type status counts) |
+| `app/Http/Controllers/DocumentController.php` | Added `page()` method with convert source logic; `store()` now redirects to document page |
+| `routes/web.php` | Added `GET /documents/{slug}` → `documents.page` |
 
 ---
 
 ## Commands to Run
 
 ```bash
-php artisan migrate
 php artisan view:clear
 ```
 
+No migrations needed.
+
 ---
 
-## How It Works
+## How the Sidebar Works
 
-### Select existing customer
-- Dropdown at the top of the form lists all saved customers
-- Selecting one auto-fills all customer_* fields instantly (JS)
+- Fixed on the left, **240px** wide
+- Click the **◀ toggle button** to collapse to **56px** (icons only)
+- Collapsed state is saved in `localStorage` — persists across page loads
+- Each document type has a **collapsible group** with 3 sub-links:
+  - Document Page (landing)
+  - New [Type] (create form)
+  - History (filtered)
+- Active route is highlighted with a blue left border
 
-### Type a new customer
-- Leave the dropdown on "Type a new customer below"
-- Fill the fields manually
-- On Save, the customer is automatically stored in the `customers` table
-- The document is linked via `customer_id`
+## How the Document Page Works
 
-### New Customer modal
-- Click "New Customer" button in the form header
-- Fill the modal fields and click "Save & Select"
-- Customer is saved via AJAX (no page reload)
-- Dropdown updates and auto-fills the form immediately
+Each document type gets its own page at `/documents/{slug}`:
 
-### Customer list
-- Visit `/customers` to view, add, and edit customers
+- **Create [Type]** — always shown, links to the create form
+- **Create from [SourceType]** — shown only when:
+  - A convert relationship is configured (currently: Invoice ← Quote)
+  - There are accepted, unconverted source documents available
+  - Includes a dropdown to pick which document to convert
+- **Recent documents table** — last 10 of that type with status badges
+
+## Convert Map
+
+Defined in `DocumentController::page()`:
+
+```php
+$convertMap = [
+    'invoice' => ['quote'],  // Invoice can be created from a Quote
+];
+```
+
+To add more relationships later (e.g. Delivery Note from Invoice), just add entries here.

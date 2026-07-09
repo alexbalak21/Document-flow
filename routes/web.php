@@ -21,7 +21,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
     Route::post('/templates/install', [TemplateController::class, 'install'])->name('templates.install');
 
-    // Documents
+    // Document type landing page
+    Route::get('/documents/{slug}', [DocumentController::class, 'page'])->name('documents.page');
+
+    // Document CRUD
     Route::get('/documents/{slug}/create',   [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/documents/{slug}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
     Route::post('/documents/{slug}/store',   [DocumentController::class, 'store'])->name('documents.store');
@@ -35,10 +38,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/documents/{document}/convert', [DocumentController::class, 'convert'])->name('documents.convert');
 
     // Customers
-    Route::get('/customers',              [CustomerController::class, 'index'])->name('customers.index');
-    Route::post('/customers',             [CustomerController::class, 'store'])->name('customers.store');
+    Route::get('/customers',                   [CustomerController::class, 'index'])->name('customers.index');
+    Route::post('/customers',                  [CustomerController::class, 'store'])->name('customers.store');
     Route::get('/customers/{customer}/edit',   [CustomerController::class, 'edit'])->name('customers.edit');
     Route::put('/customers/{customer}',        [CustomerController::class, 'update'])->name('customers.update');
-    Route::get('/api/customers',          [CustomerController::class, 'list'])->name('customers.list');
+    Route::get('/api/customers',               [CustomerController::class, 'list'])->name('customers.list');
 
 });
