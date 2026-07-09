@@ -1,4 +1,4 @@
 <?php
 
-$email = "admin@mail.com";
-$password = "password123";
+$email = "admin@example.com";
+$password = "your-password";
