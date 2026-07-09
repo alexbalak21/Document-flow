@@ -25,13 +25,29 @@ class Customer extends Model
         return $this->hasMany(Document::class);
     }
 
-    /**
-     * Display label for dropdowns.
-     */
     public function getDisplayNameAttribute(): string
     {
         return $this->company
             ? "{$this->name} — {$this->company}"
             : $this->name;
+    }
+
+    /**
+     * Return the entity data array — used by the shared entity system.
+     */
+    public function toEntityArray(): array
+    {
+        return [
+            'name'       => $this->name,
+            'company'    => $this->company,
+            'department' => $this->department,
+            'street'     => $this->street,
+            'city'       => $this->city,
+            'zip'        => $this->zip,
+            'country'    => $this->country,
+            'phone'      => $this->phone,
+            'email'      => $this->email,
+            'vat_number' => $this->vat_number,
+        ];
     }
 }

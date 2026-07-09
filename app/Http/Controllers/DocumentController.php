@@ -6,10 +6,13 @@ use App\Models\Customer;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Product;
+use App\Services\EntityResolver;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
+    public function __construct(protected EntityResolver $entityResolver) {}
+
     // -------------------------------------------------------------------------
     // DOCUMENT TYPE LANDING PAGE
     // -------------------------------------------------------------------------
@@ -18,12 +21,7 @@ class DocumentController extends Controller
     {
         $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
 
-        // Define which slugs can be converted INTO this type
-        // e.g. an invoice can be created from a quote
-        $convertMap = [
-            'invoice' => ['quote'],
-        ];
-
+        $convertMap  = ['invoice' => ['quote']];
         $sourceSlugs = $convertMap[$slug] ?? [];
 
         $convertSources = [];
@@ -31,7 +29,6 @@ class DocumentController extends Controller
             $sourceType = DocumentType::where('slug', $sourceSlug)->where('active', true)->first();
             if (! $sourceType) continue;
 
-            // Only accepted docs that haven't been converted yet
             $docs = Document::where('document_type_id', $sourceType->id)
                 ->where('status', Document::STATUS_ACCEPTED)
                 ->whereDoesntHave('convertedInvoice')
@@ -39,10 +36,7 @@ class DocumentController extends Controller
                 ->latest()
                 ->get();
 
-            $convertSources[] = [
-                'type'      => $sourceType,
-                'documents' => $docs,
-            ];
+            $convertSources[] = ['type' => $sourceType, 'documents' => $docs];
         }
 
         $recentDocs = Document::where('document_type_id', $type->id)
@@ -60,40 +54,43 @@ class DocumentController extends Controller
 
     public function create(string $slug)
     {
-        $type      = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
-        $form      = json_decode(file_get_contents($type->config_path), true);
-        $products  = Product::orderBy('name')->get();
-        $customers = Customer::orderBy('name')->get();
+        $type     = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $manifest = json_decode(file_get_contents(
+            storage_path('app/templates/' . $slug . '/manifest.json')
+        ), true);
 
-        return view('documents.create', compact('type', 'form', 'products', 'customers'));
+        $form     = json_decode(file_get_contents($type->config_path), true);
+        $entities = $this->entityResolver->forManifest($manifest);
+        $entityData = $this->entityResolver->loadAll($entities);
+
+        return view('documents.create', compact('type', 'form', 'entities', 'entityData'));
     }
 
     // -------------------------------------------------------------------------
-    // SAVE
+    // STORE
     // -------------------------------------------------------------------------
 
     public function store(Request $request, string $slug)
     {
-        $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $type     = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $manifest = json_decode(file_get_contents(
+            storage_path('app/templates/' . $slug . '/manifest.json')
+        ), true);
 
-        $data = $request->except(['_token', 'customer_id', 'save_customer']);
+        $entities = $this->entityResolver->forManifest($manifest);
 
-        // --- Handle customer ---
-        $customerId = null;
+        // All submitted data except tokens and entity IDs
+        $entityIdKeys = array_map(fn($k) => $k . '_id', array_keys($entities));
+        $data = $request->except(array_merge(['_token'], $entityIdKeys));
 
-        if ($request->filled('customer_id')) {
-            $customerId = $request->customer_id;
-            $customer   = Customer::find($customerId);
-            if ($customer) {
-                $customer->update($this->extractCustomerFields($data));
-            }
-        } else {
-            $fields = $this->extractCustomerFields($data);
-            if (! empty($fields['name'])) {
-                $customer   = Customer::create($fields);
-                $customerId = $customer->id;
-            }
+        // Collect selected entity IDs from request
+        $selectedIds = [];
+        foreach (array_keys($entities) as $key) {
+            $selectedIds[$key . '_id'] = $request->input($key . '_id');
         }
+
+        // Save entities and inject their data into $data
+        $linkedIds = $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
 
         $data = $this->computeTotals($slug, $data);
         $html = $this->renderHtml($type, $data);
@@ -108,7 +105,7 @@ class DocumentController extends Controller
 
         $document = Document::create([
             'document_type_id' => $type->id,
-            'customer_id'      => $customerId,
+            'customer_id'      => $linkedIds['customer_id'] ?? null,
             'parent_id'        => $parentId,
             'title'            => $type->name . ($reference ? ' #' . $reference : ''),
             'reference'        => $reference,
@@ -126,13 +123,28 @@ class DocumentController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // PREVIEW (no save)
+    // PREVIEW
     // -------------------------------------------------------------------------
 
     public function preview(Request $request, string $slug)
     {
-        $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
-        $data = $request->except(['_token', 'customer_id', 'save_customer']);
+        $type     = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $manifest = json_decode(file_get_contents(
+            storage_path('app/templates/' . $slug . '/manifest.json')
+        ), true);
+
+        $entities    = $this->entityResolver->forManifest($manifest);
+        $entityIdKeys = array_map(fn($k) => $k . '_id', array_keys($entities));
+        $data = $request->except(array_merge(['_token'], $entityIdKeys));
+
+        $selectedIds = [];
+        foreach (array_keys($entities) as $key) {
+            $selectedIds[$key . '_id'] = $request->input($key . '_id');
+        }
+
+        // For preview we still inject entity data but don't save
+        $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
+
         $data = $this->computeTotals($slug, $data);
         $html = $this->renderHtml($type, $data);
 
@@ -188,7 +200,7 @@ class DocumentController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // CONVERT QUOTE → INVOICE
+    // CONVERT
     // -------------------------------------------------------------------------
 
     public function convert(Document $document)
@@ -207,7 +219,6 @@ class DocumentController extends Controller
         }
 
         $invoiceType = DocumentType::where('slug', 'invoice')->where('active', true)->first();
-
         if (! $invoiceType) {
             return back()->with('error', 'Invoice template is not installed.');
         }
@@ -232,27 +243,11 @@ class DocumentController extends Controller
     // HELPERS
     // -------------------------------------------------------------------------
 
-    private function extractCustomerFields(array $data): array
-    {
-        return [
-            'name'       => $data['customer_name']       ?? '',
-            'company'    => $data['customer_company']    ?? null,
-            'department' => $data['customer_department'] ?? null,
-            'street'     => $data['customer_street']     ?? null,
-            'city'       => $data['customer_city']       ?? null,
-            'zip'        => $data['customer_zip']        ?? null,
-            'country'    => $data['customer_country']    ?? null,
-            'phone'      => $data['customer_phone']      ?? null,
-            'email'      => $data['customer_email']      ?? null,
-            'vat_number' => $data['customer_vat_number'] ?? null,
-        ];
-    }
-
     private function computeTotals(string $slug, array $data): array
     {
         if (in_array($slug, ['invoice', 'quote'])) {
-            $qty       = (float) ($data['product_quantity']   ?? 0);
-            $unitPrice = (float) ($data['product_unit_price'] ?? 0);
+            $qty       = (float) ($data['product_quantity']   ?? $data['quantity'] ?? 0);
+            $unitPrice = (float) ($data['product_unit_price'] ?? $data['unit_price'] ?? 0);
             $vatRate   = (float) ($data['vat_rate']           ?? 0);
 
             $subtotal  = $qty * $unitPrice;

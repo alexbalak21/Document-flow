@@ -11,44 +11,39 @@ class ProductSeeder extends Seeder
     {
         $products = [
             [
+                'reference'    => 'K0307-01',
+                'name'         => 'PRECICE dCK Phosphorylation Assay Kit',
+                'description'  => 'The PRECICE dCK Phosphorylation Assay Kit is designed to measure the activity of deoxycytidine kinase (dCK) in biological samples. This kit provides a convenient and reliable method for assessing dCK activity, which is important for understanding nucleoside metabolism and its implications in various diseases.',
+                'product_unit' => '(1 plate, 96 assays)',
+                'unit_price'   => 530.00,
+                'page_url'     => null,
+            ],
+            [
                 'reference'    => 'WEB-001',
                 'name'         => 'Website Design',
                 'description'  => 'Full responsive website design, up to 5 pages.',
                 'product_unit' => 'project',
-                'price'        => 150000, // €1500.00
-                'page_url'     => '/products/web-design',
-            ],
-            [
-                'reference'    => 'WEB-002',
-                'name'         => 'Website Maintenance',
-                'description'  => 'Monthly website maintenance and updates.',
-                'product_unit' => 'month',
-                'price'        => 9900, // €99.00
-                'page_url'     => '/products/web-maintenance',
+                'unit_price'   => 1500.00,
+                'page_url'     => null,
             ],
             [
                 'reference'    => 'DEV-001',
                 'name'         => 'Custom Development',
                 'description'  => 'Custom feature development, billed per hour.',
                 'product_unit' => 'hour',
-                'price'        => 8500, // €85.00
-                'page_url'     => '/products/custom-dev',
-            ],
-            [
-                'reference'    => 'SEO-001',
-                'name'         => 'SEO Audit',
-                'description'  => 'Full SEO audit with recommendations report.',
-                'product_unit' => 'report',
-                'price'        => 45000, // €450.00
-                'page_url'     => '/products/seo-audit',
+                'unit_price'   => 85.00,
+                'page_url'     => null,
             ],
         ];
 
         foreach ($products as $product) {
-            DB::table('products')->insertOrIgnore(array_merge($product, [
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            DB::table('products')->updateOrInsert(
+                ['reference' => $product['reference']],
+                array_merge($product, [
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])
+            );
         }
     }
 }

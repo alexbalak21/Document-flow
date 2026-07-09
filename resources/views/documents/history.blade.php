@@ -36,14 +36,14 @@
     </div>
 
     @if($documents->isEmpty())
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm" style="overflow:visible;">
             <div class="card-body text-center text-muted py-5">
                 No documents yet. <a href="{{ route('dashboard') }}">Create one</a>.
             </div>
         </div>
     @else
-        <div class="card border-0 shadow-sm">
-            <div class="table-responsive">
+        <div class="card border-0 shadow-sm" style="overflow:visible;">
+            
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
@@ -140,7 +140,6 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
         </div>
 
         @if($documents->hasPages())

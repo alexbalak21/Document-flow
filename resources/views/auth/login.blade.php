@@ -47,6 +47,12 @@
 
         </div>
     </div>
+    <!-- FOR DEVELOPMENT PURPOSES ONLY - TO DELETE BEFORE PRODUCTION -->
+    <script>
+        document.getElementById('email').value = "admin@mail.com";
+        document.getElementById('password').value = "password123";
+    </script>
+    <!-- FOR DEVELOPMENT PURPOSES ONLY - TO DELETE BEFORE PRODUCTION -->
 
     <p class="text-center text-muted small mt-3">{{ config('app.name') }}</p>
 </div>
