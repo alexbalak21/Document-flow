@@ -1,11 +1,14 @@
-@extends('layouts.auth')
+@extends('layouts.guest')
 
 @section('title', 'Login')
 
 @section('content')
-<div style="max-width:400px; margin:100px auto;">
+<div style="width:100%; max-width:400px; padding: 0 16px;">
 
     <div class="text-center mb-4">
+        <div class="mb-3">
+            <i class="bi bi-file-earmark-text" style="font-size:40px; color:#1a56db;"></i>
+        </div>
         <h4 class="fw-semibold">{{ config('app.name') }}</h4>
         <p class="text-muted small">Sign in to continue</p>
     </div>
