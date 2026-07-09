@@ -11,6 +11,50 @@ use Illuminate\Http\Request;
 class DocumentController extends Controller
 {
     // -------------------------------------------------------------------------
+    // DOCUMENT TYPE LANDING PAGE
+    // -------------------------------------------------------------------------
+
+    public function page(string $slug)
+    {
+        $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+
+        // Define which slugs can be converted INTO this type
+        // e.g. an invoice can be created from a quote
+        $convertMap = [
+            'invoice' => ['quote'],
+        ];
+
+        $sourceSlugs = $convertMap[$slug] ?? [];
+
+        $convertSources = [];
+        foreach ($sourceSlugs as $sourceSlug) {
+            $sourceType = DocumentType::where('slug', $sourceSlug)->where('active', true)->first();
+            if (! $sourceType) continue;
+
+            // Only accepted docs that haven't been converted yet
+            $docs = Document::where('document_type_id', $sourceType->id)
+                ->where('status', Document::STATUS_ACCEPTED)
+                ->whereDoesntHave('convertedInvoice')
+                ->with('customer')
+                ->latest()
+                ->get();
+
+            $convertSources[] = [
+                'type'      => $sourceType,
+                'documents' => $docs,
+            ];
+        }
+
+        $recentDocs = Document::where('document_type_id', $type->id)
+            ->with('customer')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('documents.page', compact('type', 'convertSources', 'recentDocs'));
+    }
+
+    // -------------------------------------------------------------------------
     // CREATE FORM
     // -------------------------------------------------------------------------
 
@@ -38,16 +82,12 @@ class DocumentController extends Controller
         $customerId = null;
 
         if ($request->filled('customer_id')) {
-            // Existing customer selected
             $customerId = $request->customer_id;
-
-            // Optionally update the customer fields if they changed
-            $customer = Customer::find($customerId);
+            $customer   = Customer::find($customerId);
             if ($customer) {
                 $customer->update($this->extractCustomerFields($data));
             }
         } else {
-            // No existing customer selected — save as new if name is filled
             $fields = $this->extractCustomerFields($data);
             if (! empty($fields['name'])) {
                 $customer   = Customer::create($fields);
@@ -58,10 +98,13 @@ class DocumentController extends Controller
         $data = $this->computeTotals($slug, $data);
         $html = $this->renderHtml($type, $data);
 
-        $reference = $data[$slug . '_number'] ?? $data['invoice_number'] ?? $data['quote_number'] ?? null;
+        $reference = $data[$slug . '_number']
+            ?? $data['invoice_number']
+            ?? $data['quote_number']
+            ?? null;
 
         $parentId = session('convert_from');
-        session()->forget(['convert_from', 'convert_data']);
+        session()->forget(['convert_from', 'convert_data', 'convert_customer_id']);
 
         $document = Document::create([
             'document_type_id' => $type->id,
@@ -74,12 +117,11 @@ class DocumentController extends Controller
             'html_snapshot'    => $html,
         ]);
 
-        // If this was a conversion, mark the quote as invoiced
         if ($parentId) {
             Document::find($parentId)?->update(['status' => Document::STATUS_INVOICED]);
         }
 
-        return redirect()->route('documents.show', $document)
+        return redirect()->route('documents.page', $slug)
             ->with('success', $type->name . ' saved successfully.');
     }
 
@@ -177,8 +219,8 @@ class DocumentController extends Controller
         }
 
         session([
-            'convert_from' => $document->id,
-            'convert_data' => $data,
+            'convert_from'        => $document->id,
+            'convert_data'        => $data,
             'convert_customer_id' => $document->customer_id,
         ]);
 
