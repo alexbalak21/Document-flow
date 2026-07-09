@@ -157,7 +157,17 @@ class DocumentController extends Controller
 
     public function show(Document $document)
     {
-        return response($document->html_snapshot);
+        return view('documents.viewer', compact('document'));
+    }
+
+    /**
+     * Return the raw HTML snapshot loaded inside the viewer iframe.
+     * Keeps all <head> styles intact.
+     */
+    public function raw(Document $document)
+    {
+        return response($document->html_snapshot ?? '')
+            ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     // -------------------------------------------------------------------------
