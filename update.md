@@ -1,4 +1,4 @@
-# Update — Template Rescan & Snapshot Regeneration
+# Update — Template Re-scan & Snapshot Regeneration
 
 ## Task
 Add ability to rescan templates after editing files, update the DB records, and regenerate all saved document snapshots so existing documents reflect the latest template.
