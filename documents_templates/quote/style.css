@@ -49,6 +49,7 @@ body {
 .items-table              { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
 .items-table thead tr     { background: #0d9488; color: #fff; }
 .items-table th           { padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.items-table th.ref { text-align: left; }
 .items-table td           { padding: 10px 12px; border-bottom: 1px solid #eee; }
 .items-table tbody tr:hover { background: #f0fdfa; }
 
@@ -85,4 +86,16 @@ body {
     border-top: 1px solid #eee;
     font-size: 10px;
     color: #999;
+}
+
+/* Item name + unit stacked in description cell */
+.item-name {
+    display: block;
+    font-weight: 500;
+}
+.item-unit {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
 }

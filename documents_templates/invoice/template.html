@@ -59,20 +59,25 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>Reference</th>
-                    <th>Description</th>
-                    <th class="text-right">Qty</th>
-                    <th class="text-right">Unit Price</th>
-                    <th class="text-right">Total</th>
+                    <th style="text-align:left; width:12%;">Reference</th>
+                    <th style="text-align:left; width:48%;">Description</th>
+                    <th class="text-right" style="width:8%;">Qty</th>
+                    <th class="text-right" style="width:16%;">Unit Price</th>
+                    <th class="text-right" style="width:16%;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td>{{product_reference}}</td>
-                    <td>{{product_name}}</td>
-                    <td class="text-right">{{product_quantity}}</td>
-                    <td class="text-right">{{product_unit_price}} {{company_currency_symbol}}</td>
-                    <td class="text-right">{{subtotal}} {{company_currency_symbol}}</td>
+                    <td style="vertical-align:top;">{{product_reference}}</td>
+                    <td>
+                        <span class="item-name">{{product_name}}</span>
+                        {{#product_unit}}
+                        <span class="item-unit">{{product_unit}}</span>
+                        {{/product_unit}}
+                    </td>
+                    <td class="text-right" style="vertical-align:top;">{{product_quantity}}</td>
+                    <td class="text-right" style="vertical-align:top;">{{product_unit_price}} {{company_currency_symbol}}</td>
+                    <td class="text-right" style="vertical-align:top;">{{subtotal}} {{company_currency_symbol}}</td>
                 </tr>
             </tbody>
         </table>

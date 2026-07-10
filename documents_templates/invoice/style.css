@@ -74,3 +74,15 @@ body {
 }
 
 .text-right { text-align: right; }
+
+/* Item name + unit stacked in description cell */
+.item-name {
+    display: block;
+    font-weight: 500;
+}
+.item-unit {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+}
