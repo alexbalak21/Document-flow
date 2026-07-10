@@ -16,7 +16,7 @@
         <div class="alert alert-success py-2">{{ session('success') }}</div>
     @endif
 
-    <form method="POST" action="{{ route('settings.company.update') }}">
+    <form method="POST" action="{{ route('settings.company.update') }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -39,9 +39,26 @@
                         <label class="form-label fw-medium">Share Capital</label>
                         <input type="text" name="share_capital" class="form-control" value="{{ $company['share_capital'] }}">
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-medium">Logo Path <span class="text-muted small">(relative to public/)</span></label>
-                        <input type="text" name="logo" class="form-control" value="{{ $company['logo'] }}" placeholder="img/logo.png">
+                    <div class="col-12">
+                        <label class="form-label fw-medium">Company Logo</label>
+                        @if($logo)
+                        <div class="mb-2 p-3 border rounded d-flex align-items-center gap-3">
+                            <img src="{{ $logo->data_uri }}" alt="Current logo"
+                                 style="max-height:60px; max-width:200px; object-fit:contain;">
+                            <div>
+                                <div class="small fw-medium">{{ $logo->filename }}</div>
+                                <div class="small text-muted">{{ $logo->mime_type }}</div>
+                                <div class="form-check mt-1">
+                                    <input type="checkbox" class="form-check-input" name="delete_logo" id="delete_logo" value="1">
+                                    <label class="form-check-label small text-danger" for="delete_logo">
+                                        Remove logo
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        <input type="file" name="logo" class="form-control" accept="image/*">
+                        <div class="form-text">PNG, JPG or SVG. Max 2 MB. Will be embedded as base64 in documents.</div>
                     </div>
                 </div>
             </div>

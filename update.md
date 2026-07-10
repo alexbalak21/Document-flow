@@ -1,7 +1,9 @@
-# Update — Edit Draft Documents & Versioning
+# Update — Company Logo in Database
 
 ## Task
-Allow editing of Quote and Invoice documents while they are in **Draft** status. Each save bumps the version number. Documents in any other status (Sent, Accepted, Paid, etc.) are read-only.
+Move company logo out of `.env` (where it was a massive base64 string causing Windows env block overflow) into a dedicated `company_assets` database table. Upload via file input on the Company Settings page.
+
+Also move long text fields (VAT mention, payment terms, etc.) out of `.env` into a JSON file in `storage/app/company_extra.json` to prevent the Windows env block size error.
 
 ---
 
@@ -11,18 +13,16 @@ Allow editing of Quote and Invoice documents while they are in **Draft** status.
 
 | File | Description |
 |---|---|
-| `resources/views/documents/edit.blade.php` | Edit form — identical to create but pre-filled from `json_data`. Submits to `PUT /documents/{id}/update` |
-| `database/migrations/2026_07_10_000001_add_version_to_documents_table.php` | Adds `version` integer column (default 1) to documents table |
+| `database/migrations/2026_07_10_000002_create_company_assets_table.php` | Creates `company_assets` table with `key`, `mime_type`, `filename`, `data_base64` columns |
+| `app/Models/CompanyAsset.php` | Model with `logo()`, `storeLogo()`, `deleteLogo()` helpers and `data_uri` accessor |
 
 ### Modified Files
 
 | File | What Changed |
 |---|---|
-| `app/Models/Document.php` | Added `version` to fillable and casts. Added `canBeEdited()` — returns true only when status is `draft` |
-| `app/Http/Controllers/DocumentController.php` | Added `edit()` and `update()` methods. `renderHtml()` made `public` so `TemplateController` can call it for regeneration. `store()` now sets `version: 1` on new documents |
-| `resources/views/documents/history.blade.php` | Added **Version** column with `v1`, `v2` badge. Added pencil **Edit** button — only visible when document is draft |
-| `resources/views/documents/viewer.blade.php` | Toolbar now shows version badge, status badge with colour, and **Edit Draft** button (yellow, draft only) |
-| `routes/web.php` | Added `GET /documents/{document}/edit`, `PUT /documents/{document}/update`, `GET /history/{document}/raw` |
+| `app/Http/Controllers/CompanySettingsController.php` | Handles file upload via `CompanyAsset::storeLogo()`. Long text fields saved to `storage/app/company_extra.json` instead of `.env`. Removes `COMPANY_LOGO` from `.env` on save |
+| `app/Http/Controllers/DocumentController.php` | `renderHtml()` loads logo from `CompanyAsset::logo()->data_uri` instead of config. Long text fields loaded from `company_extra.json` |
+| `resources/views/settings/company.blade.php` | Logo field replaced with file upload input + current logo preview + remove checkbox |
 
 ---
 
@@ -31,24 +31,19 @@ Allow editing of Quote and Invoice documents while they are in **Draft** status.
 ```bash
 php artisan migrate
 php artisan view:clear
+
+# Remove the old COMPANY_LOGO line from your .env manually
+# It's a huge base64 string — just delete that line
 ```
+
+Then go to `/settings/company` and upload your logo PNG via the file input.
 
 ---
 
 ## How It Works
 
-### Editing a draft
-- History page → pencil icon (only on Draft rows)
-- Or viewer toolbar → **✎ Edit Draft** button
-- Edit form is fully pre-filled from the saved `json_data`
-- Click **Save Changes** → re-renders the snapshot, bumps version from `v1` to `v2`, etc.
-- Click **Preview** → opens a live preview in a new tab without saving
-
-### Version tracking
-- Every new document starts at `v1`
-- Every successful edit bumps version by 1
-- Version is shown as a small badge in history and in the viewer toolbar
-
-### Read-only after draft
-- Once status changes from Draft to Sent/Accepted/Paid etc., the Edit button disappears
-- `canBeEdited()` on the model enforces this at the controller level too — attempting to edit a non-draft via URL returns a redirect with an error
+- Logo is stored as base64 in `company_assets` table under `key = 'logo'`
+- `CompanyAsset::logo()->data_uri` returns `data:image/png;base64,...` ready to embed in HTML
+- The template `{{company_logo}}` gets the full data URI — no external file dependencies
+- Long text fields (VAT mention, payment terms) saved to `storage/app/company_extra.json` — no size limits
+- `.env` only stores short string values — no more Windows env block overflow

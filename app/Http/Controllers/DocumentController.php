@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Document;
 use App\Models\DocumentType;
 use App\Models\Product;
+use App\Models\CompanyAsset;
 use App\Services\EntityResolver;
 use Illuminate\Http\Request;
 
@@ -354,7 +355,9 @@ class DocumentController extends Controller
 
         $company = config('company');
         $data['company_name']                  = $company['name']                    ?? '';
-        $data['company_logo']                  = $company['logo']                    ?? '';
+        // Logo comes from DB, not config
+        $logoAsset = CompanyAsset::logo();
+        $data['company_logo'] = $logoAsset ? $logoAsset->data_uri : '';
         $data['company_legal_form']            = $company['legal_form']              ?? '';
         $data['company_share_capital']         = $company['share_capital']           ?? '';
         $data['company_street']                = $company['street']                  ?? '';
@@ -369,10 +372,16 @@ class DocumentController extends Controller
         $data['company_website']               = $company['website']                 ?? '';
         $data['company_currency']              = $company['default_currency']        ?? 'EUR';
         $data['company_currency_symbol']       = $company['default_currency_symbol'] ?? '€';
-        $data['company_vat_mention']           = $company['vat_mention']             ?? '';
-        $data['company_terms_text']            = $company['terms_text']              ?? '';
-        $data['company_late_payment_text']     = $company['late_payment_text']       ?? '';
-        $data['company_late_payment_fee_text'] = $company['late_payment_fee_text']   ?? '';
+        // Long text fields from storage JSON (not .env)
+        $extraPath = storage_path('app/company_extra.json');
+        $extra = file_exists($extraPath)
+            ? json_decode(file_get_contents($extraPath), true)
+            : [];
+
+        $data['company_vat_mention']           = $extra['vat_mention']           ?? ($company['vat_mention']           ?? '');
+        $data['company_terms_text']            = $extra['terms_text']              ?? ($company['terms_text']              ?? '');
+        $data['company_late_payment_text']     = $extra['late_payment_text']       ?? ($company['late_payment_text']       ?? '');
+        $data['company_late_payment_fee_text'] = $extra['late_payment_fee_text']   ?? ($company['late_payment_fee_text']   ?? '');
 
         $html = preg_replace_callback(
             '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
