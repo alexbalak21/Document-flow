@@ -1,48 +1,54 @@
-# Update — Template Re-scan & Snapshot Regeneration
+# Update — Edit Draft Documents & Versioning
 
 ## Task
-Add ability to rescan templates after editing files, update the DB records, and regenerate all saved document snapshots so existing documents reflect the latest template.
+Allow editing of Quote and Invoice documents while they are in **Draft** status. Each save bumps the version number. Documents in any other status (Sent, Accepted, Paid, etc.) are read-only.
 
 ---
 
 ## What Changed
 
+### New Files
+
+| File | Description |
+|---|---|
+| `resources/views/documents/edit.blade.php` | Edit form — identical to create but pre-filled from `json_data`. Submits to `PUT /documents/{id}/update` |
+| `database/migrations/2026_07_10_000001_add_version_to_documents_table.php` | Adds `version` integer column (default 1) to documents table |
+
 ### Modified Files
 
 | File | What Changed |
 |---|---|
-| `app/Http/Controllers/TemplateController.php` | Added `rescan()` — updates all DB records + regenerates all snapshots. Added `regenerate(DocumentType)` — regenerates snapshots for one template only. Refactored shared scan logic into `scanTemplates()` |
-| `app/Models/DocumentType.php` | Added `documents()` HasMany relationship (needed for `withCount`) |
-| `resources/views/templates/index.blade.php` | Added **Rescan & Update All** button (yellow), per-template **Regenerate** button, document count badge, template folder path |
-| `routes/web.php` | Added `POST /templates/rescan` and `POST /templates/{template}/regenerate` |
+| `app/Models/Document.php` | Added `version` to fillable and casts. Added `canBeEdited()` — returns true only when status is `draft` |
+| `app/Http/Controllers/DocumentController.php` | Added `edit()` and `update()` methods. `renderHtml()` made `public` so `TemplateController` can call it for regeneration. `store()` now sets `version: 1` on new documents |
+| `resources/views/documents/history.blade.php` | Added **Version** column with `v1`, `v2` badge. Added pencil **Edit** button — only visible when document is draft |
+| `resources/views/documents/viewer.blade.php` | Toolbar now shows version badge, status badge with colour, and **Edit Draft** button (yellow, draft only) |
+| `routes/web.php` | Added `GET /documents/{document}/edit`, `PUT /documents/{document}/update`, `GET /history/{document}/raw` |
 
 ---
 
 ## Commands to Run
 
 ```bash
+php artisan migrate
 php artisan view:clear
 ```
-
-No migrations needed.
 
 ---
 
 ## How It Works
 
-### Scan & Install (blue button)
-- Scans `storage/app/templates/`
-- Only installs templates that don't exist yet in the DB
-- Safe to run anytime — won't touch existing templates
+### Editing a draft
+- History page → pencil icon (only on Draft rows)
+- Or viewer toolbar → **✎ Edit Draft** button
+- Edit form is fully pre-filled from the saved `json_data`
+- Click **Save Changes** → re-renders the snapshot, bumps version from `v1` to `v2`, etc.
+- Click **Preview** → opens a live preview in a new tab without saving
 
-### Rescan & Update All (yellow button)
-- Scans all template folders
-- Updates every existing DB record (name, version, paths, description)
-- Re-renders and saves the `html_snapshot` for every existing document
-- Installs any new templates found
-- Use this after editing `template.html`, `style.css`, or `manifest.json`
+### Version tracking
+- Every new document starts at `v1`
+- Every successful edit bumps version by 1
+- Version is shown as a small badge in history and in the viewer toolbar
 
-### Regenerate (per-template button)
-- Only regenerates snapshots for one specific template type
-- Useful when you only changed one template and don't want to touch others
-- Shows the number of documents that will be regenerated before confirming
+### Read-only after draft
+- Once status changes from Draft to Sent/Accepted/Paid etc., the Edit button disappears
+- `canBeEdited()` on the model enforces this at the controller level too — attempting to edit a non-draft via URL returns a redirect with an error

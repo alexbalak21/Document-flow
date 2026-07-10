@@ -59,15 +59,96 @@ class DocumentController extends Controller
             storage_path('app/templates/' . $slug . '/manifest.json')
         ), true);
 
-        $form     = json_decode(file_get_contents($type->config_path), true);
-        $entities = $this->entityResolver->forManifest($manifest);
+        $form       = json_decode(file_get_contents($type->config_path), true);
+        $entities   = $this->entityResolver->forManifest($manifest);
         $entityData = $this->entityResolver->loadAll($entities);
 
         return view('documents.create', compact('type', 'form', 'entities', 'entityData'));
     }
 
     // -------------------------------------------------------------------------
-    // STORE
+    // EDIT FORM (draft only)
+    // -------------------------------------------------------------------------
+
+    public function edit(Document $document)
+    {
+        if (! $document->canBeEdited()) {
+            return redirect()->route('documents.show', $document)
+                ->with('error', 'Only draft documents can be edited.');
+        }
+
+        $type = $document->documentType;
+        $slug = $type->slug;
+
+        $manifest = json_decode(file_get_contents(
+            storage_path('app/templates/' . $slug . '/manifest.json')
+        ), true);
+
+        $form       = json_decode(file_get_contents($type->config_path), true);
+        $entities   = $this->entityResolver->forManifest($manifest);
+        $entityData = $this->entityResolver->loadAll($entities);
+
+        // Use saved json_data as prefill
+        $prefill     = $document->json_data ?? [];
+        $customerId  = $document->customer_id;
+
+        return view('documents.edit', compact(
+            'document', 'type', 'form', 'entities', 'entityData', 'prefill', 'customerId'
+        ));
+    }
+
+    // -------------------------------------------------------------------------
+    // UPDATE (save edits, bump version)
+    // -------------------------------------------------------------------------
+
+    public function update(Request $request, Document $document)
+    {
+        if (! $document->canBeEdited()) {
+            return redirect()->route('documents.show', $document)
+                ->with('error', 'Only draft documents can be edited.');
+        }
+
+        $type = $document->documentType;
+        $slug = $type->slug;
+
+        $manifest = json_decode(file_get_contents(
+            storage_path('app/templates/' . $slug . '/manifest.json')
+        ), true);
+
+        $entities     = $this->entityResolver->forManifest($manifest);
+        $entityIdKeys = array_map(fn($k) => $k . '_id', array_keys($entities));
+        $data         = $request->except(array_merge(['_token', '_method'], $entityIdKeys));
+
+        $selectedIds = [];
+        foreach (array_keys($entities) as $key) {
+            $selectedIds[$key . '_id'] = $request->input($key . '_id');
+        }
+
+        $linkedIds = $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
+
+        $data = $this->computeTotals($slug, $data);
+        $html = $this->renderHtml($type, $data);
+
+        $reference = $data[$slug . '_number']
+            ?? $data['invoice_number']
+            ?? $data['quote_number']
+            ?? $document->reference;
+
+        $document->update([
+            'customer_id'   => $linkedIds['customer_id'] ?? $document->customer_id,
+            'title'         => $type->name . ($reference ? ' #' . $reference : ''),
+            'reference'     => $reference,
+            'version'       => $document->version + 1,
+            'json_data'     => $data,
+            'html_snapshot' => $html,
+        ]);
+
+        return redirect()->route('documents.show', $document)
+            ->with('success', $type->name . ' updated to v' . $document->fresh()->version . '.');
+    }
+
+    // -------------------------------------------------------------------------
+    // STORE (new document)
     // -------------------------------------------------------------------------
 
     public function store(Request $request, string $slug)
@@ -77,19 +158,15 @@ class DocumentController extends Controller
             storage_path('app/templates/' . $slug . '/manifest.json')
         ), true);
 
-        $entities = $this->entityResolver->forManifest($manifest);
-
-        // All submitted data except tokens and entity IDs
+        $entities     = $this->entityResolver->forManifest($manifest);
         $entityIdKeys = array_map(fn($k) => $k . '_id', array_keys($entities));
-        $data = $request->except(array_merge(['_token'], $entityIdKeys));
+        $data         = $request->except(array_merge(['_token'], $entityIdKeys));
 
-        // Collect selected entity IDs from request
         $selectedIds = [];
         foreach (array_keys($entities) as $key) {
             $selectedIds[$key . '_id'] = $request->input($key . '_id');
         }
 
-        // Save entities and inject their data into $data
         $linkedIds = $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
 
         $data = $this->computeTotals($slug, $data);
@@ -110,6 +187,7 @@ class DocumentController extends Controller
             'title'            => $type->name . ($reference ? ' #' . $reference : ''),
             'reference'        => $reference,
             'status'           => Document::STATUS_DRAFT,
+            'version'          => 1,
             'json_data'        => $data,
             'html_snapshot'    => $html,
         ]);
@@ -123,7 +201,7 @@ class DocumentController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // PREVIEW
+    // PREVIEW (no save)
     // -------------------------------------------------------------------------
 
     public function preview(Request $request, string $slug)
@@ -133,16 +211,15 @@ class DocumentController extends Controller
             storage_path('app/templates/' . $slug . '/manifest.json')
         ), true);
 
-        $entities    = $this->entityResolver->forManifest($manifest);
+        $entities     = $this->entityResolver->forManifest($manifest);
         $entityIdKeys = array_map(fn($k) => $k . '_id', array_keys($entities));
-        $data = $request->except(array_merge(['_token'], $entityIdKeys));
+        $data         = $request->except(array_merge(['_token'], $entityIdKeys));
 
         $selectedIds = [];
         foreach (array_keys($entities) as $key) {
             $selectedIds[$key . '_id'] = $request->input($key . '_id');
         }
 
-        // For preview we still inject entity data but don't save
         $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
 
         $data = $this->computeTotals($slug, $data);
@@ -160,10 +237,6 @@ class DocumentController extends Controller
         return view('documents.viewer', compact('document'));
     }
 
-    /**
-     * Return the raw HTML snapshot loaded inside the viewer iframe.
-     * Keeps all <head> styles intact.
-     */
     public function raw(Document $document)
     {
         return response($document->html_snapshot ?? '')
@@ -210,7 +283,7 @@ class DocumentController extends Controller
     }
 
     // -------------------------------------------------------------------------
-    // CONVERT
+    // CONVERT QUOTE → INVOICE
     // -------------------------------------------------------------------------
 
     public function convert(Document $document)
@@ -272,35 +345,34 @@ class DocumentController extends Controller
         return $data;
     }
 
-    private function renderHtml(DocumentType $type, array $data): string
+    public function renderHtml(DocumentType $type, array $data): string
     {
         $html = file_get_contents($type->template_path);
         $css  = file_get_contents(dirname($type->template_path) . '/style.css');
 
         $html = str_replace('{{style}}', $css, $html);
 
-        // Inject company data from config/company.php
         $company = config('company');
-        $data['company_name']               = $company['name']                  ?? '';
-        $data['company_logo']               = $company['logo']                  ?? '';
-        $data['company_legal_form']         = $company['legal_form']            ?? '';
-        $data['company_share_capital']      = $company['share_capital']         ?? '';
-        $data['company_street']             = $company['street']                ?? '';
-        $data['company_city']               = $company['city']                  ?? '';
-        $data['company_zip']               = $company['zip']                   ?? '';
-        $data['company_country']            = $company['country']               ?? '';
-        $data['company_siren']              = $company['siren']                 ?? '';
-        $data['company_siret']              = $company['siret']                 ?? '';
-        $data['company_vat_number']         = $company['vat_number']            ?? '';
-        $data['company_eori']               = $company['eori']                  ?? '';
-        $data['company_email']              = $company['email']                 ?? '';
-        $data['company_website']            = $company['website']               ?? '';
-        $data['company_currency']           = $company['default_currency']      ?? 'EUR';
-        $data['company_currency_symbol']    = $company['default_currency_symbol'] ?? '€';
-        $data['company_vat_mention']        = $company['vat_mention']           ?? '';
-        $data['company_terms_text']         = $company['terms_text']            ?? '';
-        $data['company_late_payment_text']  = $company['late_payment_text']     ?? '';
-        $data['company_late_payment_fee_text'] = $company['late_payment_fee_text'] ?? '';
+        $data['company_name']                  = $company['name']                    ?? '';
+        $data['company_logo']                  = $company['logo']                    ?? '';
+        $data['company_legal_form']            = $company['legal_form']              ?? '';
+        $data['company_share_capital']         = $company['share_capital']           ?? '';
+        $data['company_street']                = $company['street']                  ?? '';
+        $data['company_city']                  = $company['city']                    ?? '';
+        $data['company_zip']                   = $company['zip']                     ?? '';
+        $data['company_country']               = $company['country']                 ?? '';
+        $data['company_siren']                 = $company['siren']                   ?? '';
+        $data['company_siret']                 = $company['siret']                   ?? '';
+        $data['company_vat_number']            = $company['vat_number']              ?? '';
+        $data['company_eori']                  = $company['eori']                    ?? '';
+        $data['company_email']                 = $company['email']                   ?? '';
+        $data['company_website']               = $company['website']                 ?? '';
+        $data['company_currency']              = $company['default_currency']        ?? 'EUR';
+        $data['company_currency_symbol']       = $company['default_currency_symbol'] ?? '€';
+        $data['company_vat_mention']           = $company['vat_mention']             ?? '';
+        $data['company_terms_text']            = $company['terms_text']              ?? '';
+        $data['company_late_payment_text']     = $company['late_payment_text']       ?? '';
+        $data['company_late_payment_fee_text'] = $company['late_payment_fee_text']   ?? '';
 
         $html = preg_replace_callback(
             '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',

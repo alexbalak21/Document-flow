@@ -14,6 +14,7 @@ class Document extends Model
         'title',
         'reference',
         'status',
+        'version',
         'parent_id',
         'json_data',
         'html_snapshot',
@@ -21,6 +22,7 @@ class Document extends Model
 
     protected $casts = [
         'json_data' => 'array',
+        'version'   => 'integer',
     ];
 
     const STATUS_DRAFT     = 'draft';
@@ -76,5 +78,13 @@ class Document extends Model
         return $this->isQuote()
             && $this->status === self::STATUS_ACCEPTED
             && is_null($this->convertedInvoice);
+    }
+
+    /**
+     * A document can be edited only when it is in draft status.
+     */
+    public function canBeEdited(): bool
+    {
+        return $this->status === self::STATUS_DRAFT;
     }
 }

@@ -34,7 +34,10 @@ Route::middleware('auth')->group(function () {
 
     // History
     Route::get('/history',            [DocumentController::class, 'history'])->name('documents.history');
-    Route::get('/history/{document}', [DocumentController::class, 'show'])->name('documents.show');
+    Route::get('/history/{document}',     [DocumentController::class, 'show'])->name('documents.show');
+    Route::get('/history/{document}/raw', [DocumentController::class, 'raw'])->name('documents.raw');
+    Route::get('/documents/{document}/edit',   [DocumentController::class, 'edit'])->name('documents.edit');
+    Route::put('/documents/{document}/update', [DocumentController::class, 'update'])->name('documents.update');
     Route::get('/history/{document}/raw', [DocumentController::class, 'raw'])->name('documents.raw');
 
     // Status & Convert
