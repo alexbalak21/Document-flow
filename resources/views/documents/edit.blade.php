@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <form method="POST" action="{{ route('documents.update', $document) }}">
+    <form method="POST" action="{{ route('documents.update', $document) }}" id="edit-form">
         @csrf
         @method('PUT')
 
@@ -57,18 +57,18 @@
 
                 <div class="row g-2">
                     @php
-                        $customerFields = [
-                            ['customer_name',       'Full Name',        'text',  true],
-                            ['customer_company',    'Company',          'text',  false],
-                            ['customer_department', 'Department',       'text',  false],
-                            ['customer_vat_number', 'VAT Number',       'text',  false],
-                            ['customer_street',     'Street / Address', 'text',  false],
-                            ['customer_city',       'City',             'text',  false],
-                            ['customer_zip',        'ZIP',              'text',  false],
-                            ['customer_country',    'Country',          'text',  false],
-                            ['customer_phone',      'Phone',            'tel',   false],
-                            ['customer_email',      'Email',            'email', false],
-                        ];
+                    $customerFields = [
+                    ['customer_name', 'Full Name', 'text', true],
+                    ['customer_company', 'Company', 'text', false],
+                    ['customer_department', 'Department', 'text', false],
+                    ['customer_vat_number', 'VAT Number', 'text', false],
+                    ['customer_street', 'Street / Address', 'text', false],
+                    ['customer_city', 'City', 'text', false],
+                    ['customer_zip', 'ZIP', 'text', false],
+                    ['customer_country', 'Country', 'text', false],
+                    ['customer_phone', 'Phone', 'tel', false],
+                    ['customer_email', 'Email', 'email', false],
+                    ];
                     @endphp
                     @foreach($customerFields as [$fieldName, $label, $inputType, $required])
                     <div class="col-md-6">
@@ -77,10 +77,10 @@
                             @if($required)<span class="text-danger">*</span>@endif
                         </label>
                         <input type="{{ $inputType }}"
-                               name="{{ $fieldName }}"
-                               class="form-control form-control-sm"
-                               value="{{ $prefill[$fieldName] ?? '' }}"
-                               {{ $required ? 'required' : '' }}>
+                            name="{{ $fieldName }}"
+                            class="form-control form-control-sm"
+                            value="{{ $prefill[$fieldName] ?? '' }}"
+                            {{ $required ? 'required' : '' }}>
                     </div>
                     @endforeach
                 </div>
@@ -115,34 +115,30 @@
                     <div class="col-md-4">
                         <label class="form-label fw-medium small">Reference <span class="text-danger">*</span></label>
                         <input type="text" name="product_reference" class="form-control form-control-sm"
-                               value="{{ $prefill['product_reference'] ?? '' }}" required>
+                            value="{{ $prefill['product_reference'] ?? '' }}" required>
                     </div>
                     <div class="col-md-8">
                         <label class="form-label fw-medium small">Product Name <span class="text-danger">*</span></label>
                         <input type="text" name="product_name" class="form-control form-control-sm"
-                               value="{{ $prefill['product_name'] ?? '' }}" required>
+                            value="{{ $prefill['product_name'] ?? '' }}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-medium small">Unit</label>
                         <input type="text" name="product_unit" class="form-control form-control-sm"
-                               value="{{ $prefill['product_unit'] ?? '' }}"
-                               placeholder="e.g. (1 plate, 96 assays)">
+                            value="{{ $prefill['product_unit'] ?? '' }}"
+                            placeholder="e.g. (1 plate, 96 assays)">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-medium small">Quantity <span class="text-danger">*</span></label>
                         <input type="number" name="product_quantity" class="form-control form-control-sm"
-                               value="{{ $prefill['product_quantity'] ?? 1 }}" min="1" step="1" required>
+                            value="{{ $prefill['product_quantity'] ?? 1 }}" min="1" step="1" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-medium small">Unit Price (€) <span class="text-danger">*</span></label>
                         <input type="number" name="product_unit_price" class="form-control form-control-sm"
-                               value="{{ $prefill['product_unit_price'] ?? '' }}" min="0" step="0.01" required>
+                            value="{{ $prefill['product_unit_price'] ?? '' }}" min="0" step="0.01" required>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-medium small">VAT %</label>
-                        <input type="number" name="vat_rate" class="form-control form-control-sm"
-                               value="{{ $prefill['vat_rate'] ?? 0 }}" min="0" step="0.1">
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -164,24 +160,24 @@
                         @php $val = $prefill[$field['name']] ?? old($field['name'], ''); @endphp
 
                         @if($field['type'] === 'textarea')
-                            <textarea name="{{ $field['name'] }}" class="form-control" rows="3"
-                                {{ !empty($field['required']) ? 'required' : '' }}>{{ $val }}</textarea>
+                        <textarea name="{{ $field['name'] }}" class="form-control" rows="3"
+                            {{ !empty($field['required']) ? 'required' : '' }}>{{ $val }}</textarea>
 
                         @elseif($field['type'] === 'date')
-                            <input type="date" name="{{ $field['name'] }}" class="form-control"
-                                value="{{ $val ?: date('Y-m-d') }}"
-                                {{ !empty($field['required']) ? 'required' : '' }}>
+                        <input type="date" name="{{ $field['name'] }}" class="form-control"
+                            value="{{ $val ?: date('Y-m-d') }}"
+                            {{ !empty($field['required']) ? 'required' : '' }}>
 
                         @elseif(in_array($field['type'], ['number', 'currency']))
-                            <input type="number" name="{{ $field['name'] }}" class="form-control"
-                                step="{{ $field['type'] === 'currency' ? '0.01' : '1' }}"
-                                min="0" value="{{ $val }}"
-                                {{ !empty($field['required']) ? 'required' : '' }}>
+                        <input type="number" name="{{ $field['name'] }}" class="form-control"
+                            step="{{ $field['type'] === 'currency' ? '0.01' : '1' }}"
+                            min="0" value="{{ $val }}"
+                            {{ !empty($field['required']) ? 'required' : '' }}>
 
                         @else
-                            <input type="{{ $field['type'] }}" name="{{ $field['name'] }}"
-                                class="form-control" value="{{ $val }}"
-                                {{ !empty($field['required']) ? 'required' : '' }}>
+                        <input type="{{ $field['type'] }}" name="{{ $field['name'] }}"
+                            class="form-control" value="{{ $val }}"
+                            {{ !empty($field['required']) ? 'required' : '' }}>
                         @endif
                     </div>
                     @endforeach
@@ -194,15 +190,18 @@
             <button type="submit" class="btn btn-warning">
                 <i class="bi bi-floppy me-1"></i>Save Changes
             </button>
-            <button type="submit"
-                formaction="{{ route('documents.preview', $type->slug) }}"
-                formtarget="_blank"
-                class="btn btn-outline-primary">
+            <button type="button" class="btn btn-outline-primary" onclick="submitPreview()">
                 <i class="bi bi-eye me-1"></i>Preview
             </button>
             <a href="{{ route('documents.show', $document) }}" class="btn btn-outline-secondary">Cancel</a>
         </div>
 
+    </form>
+
+    {{-- Dedicated POST-only preview form --}}
+    <form method="POST" action="{{ route('documents.preview', $type->slug) }}"
+          target="_blank" id="preview-form" style="display:none;">
+        @csrf
     </form>
 </div>
 
@@ -242,71 +241,115 @@
 @endif
 
 <script>
-document.getElementById('customer-picker')?.addEventListener('change', function () {
-    const opt = this.options[this.selectedIndex];
-    if (!opt.value) return;
-    const map = {
-        'customer_name':       opt.dataset.name,
-        'customer_company':    opt.dataset.company,
-        'customer_department': opt.dataset.department,
-        'customer_street':     opt.dataset.street,
-        'customer_city':       opt.dataset.city,
-        'customer_zip':        opt.dataset.zip,
-        'customer_country':    opt.dataset.country,
-        'customer_phone':      opt.dataset.phone,
-        'customer_email':      opt.dataset.email,
-        'customer_vat_number': opt.dataset.vat,
-    };
-    for (const [name, value] of Object.entries(map)) {
-        const el = document.querySelector(`[name="${name}"]`);
-        if (el) el.value = value ?? '';
-    }
-});
-
-document.getElementById('product-picker')?.addEventListener('change', function () {
-    const opt = this.options[this.selectedIndex];
-    if (!opt.value) return;
-    const fields = {
-        'product_reference':  opt.dataset.reference,
-        'product_name':       opt.dataset.name,
-        'product_unit':       opt.dataset.unit,
-        'product_unit_price': opt.dataset.price,
-    };
-    for (const [name, value] of Object.entries(fields)) {
-        const el = document.querySelector(`[name="${name}"]`);
-        if (el) el.value = value ?? '';
-    }
-});
-
-document.getElementById('saveNewCustomer')?.addEventListener('click', async function () {
-    const errBox = document.getElementById('modal-errors');
-    errBox.classList.add('d-none');
-    const payload = {
-        name:       document.getElementById('m_name').value,
-        company:    document.getElementById('m_company').value,
-        department: document.getElementById('m_department').value,
-        street:     document.getElementById('m_street').value,
-        city:       document.getElementById('m_city').value,
-        zip:        document.getElementById('m_zip').value,
-        country:    document.getElementById('m_country').value,
-        phone:      document.getElementById('m_phone').value,
-        email:      document.getElementById('m_email').value,
-        vat_number: document.getElementById('m_vat_number').value,
-    };
-    if (!payload.name) { errBox.textContent = 'Name is required.'; errBox.classList.remove('d-none'); return; }
-    const res = await fetch('{{ route("customers.store") }}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-        body: JSON.stringify(payload),
+    document.getElementById('customer-picker')?.addEventListener('change', function() {
+        const opt = this.options[this.selectedIndex];
+        if (!opt.value) return;
+        const map = {
+            'customer_name': opt.dataset.name,
+            'customer_company': opt.dataset.company,
+            'customer_department': opt.dataset.department,
+            'customer_street': opt.dataset.street,
+            'customer_city': opt.dataset.city,
+            'customer_zip': opt.dataset.zip,
+            'customer_country': opt.dataset.country,
+            'customer_phone': opt.dataset.phone,
+            'customer_email': opt.dataset.email,
+            'customer_vat_number': opt.dataset.vat,
+        };
+        for (const [name, value] of Object.entries(map)) {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (el) el.value = value ?? '';
+        }
     });
-    if (!res.ok) { const err = await res.json(); errBox.textContent = Object.values(err.errors ?? {}).flat().join(' '); errBox.classList.remove('d-none'); return; }
-    const customer = await res.json();
-    const picker   = document.getElementById('customer-picker');
-    const option   = new Option(customer.name + (customer.company ? ' — ' + customer.company : ''), customer.id, true, true);
-    Object.assign(option.dataset, { name: customer.name, company: customer.company ?? '', department: customer.department ?? '', street: customer.street ?? '', city: customer.city ?? '', zip: customer.zip ?? '', country: customer.country ?? '', phone: customer.phone ?? '', email: customer.email ?? '', vat: customer.vat_number ?? '' });
-    picker.add(option);
-    picker.dispatchEvent(new Event('change'));
-    bootstrap.Modal.getInstance(document.getElementById('newCustomerModal')).hide();
-});
+
+    document.getElementById('product-picker')?.addEventListener('change', function() {
+        const opt = this.options[this.selectedIndex];
+        if (!opt.value) return;
+        const fields = {
+            'product_reference': opt.dataset.reference,
+            'product_name': opt.dataset.name,
+            'product_unit': opt.dataset.unit,
+            'product_unit_price': opt.dataset.price,
+        };
+        for (const [name, value] of Object.entries(fields)) {
+            const el = document.querySelector(`[name="${name}"]`);
+            if (el) el.value = value ?? '';
+        }
+    });
+
+    document.getElementById('saveNewCustomer')?.addEventListener('click', async function() {
+        const errBox = document.getElementById('modal-errors');
+        errBox.classList.add('d-none');
+        const payload = {
+            name: document.getElementById('m_name').value,
+            company: document.getElementById('m_company').value,
+            department: document.getElementById('m_department').value,
+            street: document.getElementById('m_street').value,
+            city: document.getElementById('m_city').value,
+            zip: document.getElementById('m_zip').value,
+            country: document.getElementById('m_country').value,
+            phone: document.getElementById('m_phone').value,
+            email: document.getElementById('m_email').value,
+            vat_number: document.getElementById('m_vat_number').value,
+        };
+        if (!payload.name) {
+            errBox.textContent = 'Name is required.';
+            errBox.classList.remove('d-none');
+            return;
+        }
+        const res = await fetch('{{ route("customers.store") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            errBox.textContent = Object.values(err.errors ?? {}).flat().join(' ');
+            errBox.classList.remove('d-none');
+            return;
+        }
+        const customer = await res.json();
+        const picker = document.getElementById('customer-picker');
+        const option = new Option(customer.name + (customer.company ? ' — ' + customer.company : ''), customer.id, true, true);
+        Object.assign(option.dataset, {
+            name: customer.name,
+            company: customer.company ?? '',
+            department: customer.department ?? '',
+            street: customer.street ?? '',
+            city: customer.city ?? '',
+            zip: customer.zip ?? '',
+            country: customer.country ?? '',
+            phone: customer.phone ?? '',
+            email: customer.email ?? '',
+            vat: customer.vat_number ?? ''
+        });
+        picker.add(option);
+        picker.dispatchEvent(new Event('change'));
+        bootstrap.Modal.getInstance(document.getElementById('newCustomerModal')).hide();
+    });
+
+    function submitPreview() {
+        const editForm    = document.getElementById('edit-form');
+        const previewForm = document.getElementById('preview-form');
+
+        // Clear previous hidden inputs
+        previewForm.querySelectorAll('input[type="hidden"]:not([name="_token"])').forEach(el => el.remove());
+
+        // Copy all field values except _method (no PUT spoofing)
+        new FormData(editForm).forEach((value, key) => {
+            if (key === '_method' || key === '_token') return;
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = key;
+            input.value = value;
+            previewForm.appendChild(input);
+        });
+
+        previewForm.submit();
+    }
 </script>
 @endsection

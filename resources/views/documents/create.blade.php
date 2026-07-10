@@ -142,11 +142,7 @@
                         <input type="number" name="product_unit_price" class="form-control form-control-sm"
                                value="{{ $prefill['product_unit_price'] ?? '' }}" min="0" step="0.01" required>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-medium small">VAT %</label>
-                        <input type="number" name="vat_rate" class="form-control form-control-sm"
-                               value="{{ $prefill['vat_rate'] ?? 0 }}" min="0" step="0.1">
-                    </div>
+
                 </div>
             </div>
         </div>
