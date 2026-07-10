@@ -18,7 +18,36 @@
                 "type": "date",
                 "name": "due_date",
                 "label": "Due Date",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "delivery_date",
+                "label": "Service / Delivery Date",
                 "required": false
+            },
+            {
+                "type": "text",
+                "name": "quote_reference",
+                "label": "Quote Reference",
+                "required": false
+            },
+            {
+                "type": "text",
+                "name": "purchase_order",
+                "label": "Purchase Order Number",
+                "required": false
+            }
+        ]
+    },
+    {
+        "section": "Product & Pricing",
+        "fields": [
+            {
+                "type": "number",
+                "name": "vat_rate",
+                "label": "VAT Rate (%)",
+                "required": true
             }
         ]
     },

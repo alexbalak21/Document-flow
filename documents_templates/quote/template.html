@@ -21,24 +21,26 @@
             </div>
             <div class="company-contact">{{company_email}}</div>
             <div class="company-legal">
-                {{company_legal_form}} - Share capital: {{company_share_capital}}<br>
-                SIRET: {{company_siret}}<br>
-                VAT: {{company_vat_number}}
+                {{company_legal_form}}{{#company_share_capital}} — Share Capital: {{company_share_capital}}{{/company_share_capital}}<br>
+                SIREN&nbsp;: {{company_siren}} — SIRET&nbsp;: {{company_siret}}<br>
+                {{#company_rcs}}RCS {{company_rcs}} — {{/company_rcs}}VAT&nbsp;: {{company_vat_number}}
             </div>
         </div>
         <div class="invoice-meta">
             <div class="invoice-title quote-title">QUOTE</div>
             <table class="meta-table">
-                <tr><td>Number</td><td><strong>{{quote_number}}</strong></td></tr>
+                <tr><td>No.</td><td><strong>{{quote_number}}</strong></td></tr>
                 <tr><td>Date</td><td>{{quote_date}}</td></tr>
-                <tr><td>Valid until</td><td>{{valid_until}}</td></tr>
+                <tr><td>Valid Until</td><td>{{valid_until}}</td></tr>
+                {{#estimated_start}}<tr><td>Estimated Start</td><td>{{estimated_start}}</td></tr>{{/estimated_start}}
+                {{#estimated_duration}}<tr><td>Estimated Duration</td><td>{{estimated_duration}}</td></tr>{{/estimated_duration}}
             </table>
         </div>
     </div>
 
-    <!-- Bill To -->
+    <!-- Quote For -->
     <div class="bill-to">
-        <div class="bill-to-label">Quote For</div>
+        <div class="bill-to-label">Quote Prepared For</div>
         <div class="customer-name">{{customer_name}}</div>
         <div class="customer-company">{{customer_company}}</div>
         <div class="customer-department">{{customer_department}}</div>
@@ -50,7 +52,7 @@
             {{#customer_email}}<span>&#9993; {{customer_email}}</span>{{/customer_email}}
         </div>
         {{#customer_vat_number}}
-        <div class="customer-vat">VAT: {{customer_vat_number}}</div>
+        <div class="customer-vat">VAT No.&nbsp;: {{customer_vat_number}}</div>
         {{/customer_vat_number}}
     </div>
 
@@ -58,11 +60,12 @@
     <table class="items-table">
         <thead>
             <tr>
-                <th style="text-align:left; width:12%;">Reference</th>
-                <th style="text-align:left; width:48%;">Description</th>
-                <th class="text-right" style="width:8%;">Qty</th>
-                <th class="text-right" style="width:16%;">Unit Price</th>
-                <th class="text-right" style="width:16%;">Total</th>
+                <th style="text-align:left; width:11%;">Reference</th>
+                <th style="text-align:left; width:42%;">Description</th>
+                <th class="text-right" style="width:7%;">Qty</th>
+                <th class="text-right" style="width:12%;">Unit Price</th>
+                <th class="text-right" style="width:8%;">VAT</th>
+                <th class="text-right" style="width:10%;">Total (excl. VAT)</th>
             </tr>
         </thead>
         <tbody>
@@ -71,10 +74,12 @@
                 <td>
                     <span class="item-name">{{product_name}}</span>
                     {{#product_unit}}<span class="item-unit">{{product_unit}}</span>{{/product_unit}}
+                    {{#product_description}}<span class="item-desc">{{product_description}}</span>{{/product_description}}
                 </td>
                 <td class="text-right" style="vertical-align:top;">{{product_quantity}}</td>
-                <td class="text-right" style="vertical-align:top;">{{product_unit_price}} {{company_currency_symbol}}</td>
-                <td class="text-right" style="vertical-align:top;">{{subtotal}} {{company_currency_symbol}}</td>
+                <td class="text-right" style="vertical-align:top;">{{product_unit_price}}&nbsp;{{company_currency_symbol}}</td>
+                <td class="text-right" style="vertical-align:top;">{{vat_rate}}&nbsp;%</td>
+                <td class="text-right" style="vertical-align:top;">{{subtotal}}&nbsp;{{company_currency_symbol}}</td>
             </tr>
         </tbody>
     </table>
@@ -82,11 +87,11 @@
     <!-- Totals -->
     <div class="totals">
         <table>
-            <tr><td>Subtotal</td><td class="text-right">{{subtotal}} {{company_currency_symbol}}</td></tr>
-            <tr><td>VAT ({{vat_rate}}%)</td><td class="text-right">{{vat_amount}} {{company_currency_symbol}}</td></tr>
+            <tr><td>Total (excl. VAT)</td><td class="text-right">{{subtotal}}&nbsp;{{company_currency_symbol}}</td></tr>
+            <tr><td>VAT ({{vat_rate}}&nbsp;%)</td><td class="text-right">{{vat_amount}}&nbsp;{{company_currency_symbol}}</td></tr>
             <tr class="total-row">
-                <td><strong>Total</strong></td>
-                <td class="text-right"><strong>{{total}} {{company_currency_symbol}}</strong></td>
+                <td><strong>Total (incl. VAT)</strong></td>
+                <td class="text-right"><strong>{{total}}&nbsp;{{company_currency_symbol}}</strong></td>
             </tr>
         </table>
     </div>
@@ -99,23 +104,47 @@
     <!-- Notes -->
     {{#notes}}
     <div class="notes">
-        <div class="notes-label">Notes</div>
+        <div class="notes-label">Notes / Special Conditions</div>
         <div>{{notes}}</div>
     </div>
     {{/notes}}
 
-    <!-- Quote footer -->
-    <div class="quote-footer">
-        This quote is valid until {{valid_until}}. To accept, please reply by email or sign below.
-        <div class="signature-line">
-            <span>Signature &amp; Date</span>
+    <!-- Client Acceptance Block -->
+    <div class="acceptance-block">
+        <div class="acceptance-title">Client Acceptance</div>
+        <p class="acceptance-text">
+            Quote received prior to execution of work, read and approved, agreed upon.<br>
+            This quote is valid until {{valid_until}}.
+        </p>
+        <div class="acceptance-fields">
+            <div class="acceptance-field">
+                <div class="acceptance-line"></div>
+                <div class="acceptance-label">Client Signature</div>
+            </div>
+            <div class="acceptance-field">
+                <div class="acceptance-line"></div>
+                <div class="acceptance-label">Acceptance Date</div>
+            </div>
+            <div class="acceptance-field">
+                <div class="acceptance-line"></div>
+                <div class="acceptance-label">Company Stamp</div>
+            </div>
         </div>
     </div>
 
     <!-- Legal footer -->
     <div class="doc-footer">
-        {{company_terms_text}}<br>
-        {{company_late_payment_text}} {{company_late_payment_fee_text}}
+        <div class="footer-payment">
+            {{company_terms_text}}
+        </div>
+        <div class="footer-legal">
+            {{company_late_payment_text}}<br>
+            {{company_late_payment_fee_text}}
+        </div>
+        <div class="footer-identity">
+            {{company_name}} — {{company_legal_form}} — Share Capital: {{company_share_capital}} —
+            SIRET: {{company_siret}} — VAT: {{company_vat_number}}
+        </div>
     </div>
 
 </div>

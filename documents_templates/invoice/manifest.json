@@ -1,9 +1,9 @@
 {
     "name": "Invoice",
     "slug": "invoice",
-    "version": "1.2",
+    "version": "1.4",
     "author": "Document Flow",
-    "description": "Standard invoice with full customer details and one product line",
+    "description": "English invoice with mandatory legal mentions, VAT breakdown per line, and company logo",
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",

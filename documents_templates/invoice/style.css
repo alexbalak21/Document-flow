@@ -98,3 +98,35 @@ body {
 .items-table td + td {
     border-left: 1px solid rgba(0,0,0,.08);
 }
+
+/* Description cell sub-text */
+.item-desc {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+    font-style: italic;
+}
+
+/* Footer sections */
+.doc-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 10px;
+    color: #999;
+}
+.footer-payment {
+    margin-bottom: 4px;
+    color: #666;
+}
+.footer-legal {
+    margin-bottom: 6px;
+    font-style: italic;
+}
+.footer-identity {
+    margin-top: 6px;
+    border-top: 1px dotted #ddd;
+    padding-top: 4px;
+    color: #bbb;
+}

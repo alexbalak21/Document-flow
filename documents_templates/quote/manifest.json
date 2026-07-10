@@ -1,9 +1,9 @@
 {
     "name": "Quote",
     "slug": "quote",
-    "version": "1.1",
+    "version": "1.3",
     "author": "Document Flow",
-    "description": "Standard quote / commercial proposal with full customer details",
+    "description": "English quote with mandatory legal mentions, VAT breakdown per line, and client acceptance block",
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",

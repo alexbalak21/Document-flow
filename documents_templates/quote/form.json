@@ -18,7 +18,30 @@
                 "type": "date",
                 "name": "valid_until",
                 "label": "Valid Until",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "estimated_start",
+                "label": "Estimated Start Date",
                 "required": false
+            },
+            {
+                "type": "text",
+                "name": "estimated_duration",
+                "label": "Estimated Duration",
+                "required": false
+            }
+        ]
+    },
+    {
+        "section": "Product & Pricing",
+        "fields": [
+            {
+                "type": "number",
+                "name": "vat_rate",
+                "label": "VAT Rate (%)",
+                "required": true
             }
         ]
     },
@@ -28,7 +51,7 @@
             {
                 "type": "textarea",
                 "name": "notes",
-                "label": "Notes",
+                "label": "Notes / Special Conditions",
                 "required": false
             }
         ]
