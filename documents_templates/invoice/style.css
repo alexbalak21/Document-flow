@@ -75,6 +75,12 @@ body {
 
 .text-right { text-align: right; }
 
+/* Vertical separators between table columns */
+.items-table th + th,
+.items-table td + td {
+    border-left: 1px solid rgba(0,0,0,.08);
+}
+
 /* Item name + unit stacked in description cell */
 .item-name {
     display: block;
@@ -85,4 +91,10 @@ body {
     font-size: 11px;
     color: #888;
     margin-top: 2px;
+}
+
+/* Vertical separators between table columns */
+.items-table th + th,
+.items-table td + td {
+    border-left: 1px solid rgba(0,0,0,.08);
 }
