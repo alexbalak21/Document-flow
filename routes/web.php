@@ -20,7 +20,9 @@ Route::middleware('auth')->group(function () {
 
     // Templates
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
-    Route::post('/templates/install', [TemplateController::class, 'install'])->name('templates.install');
+    Route::post('/templates/install',  [TemplateController::class, 'install'])->name('templates.install');
+    Route::post('/templates/rescan',   [TemplateController::class, 'rescan'])->name('templates.rescan');
+    Route::post('/templates/{template}/regenerate', [TemplateController::class, 'regenerate'])->name('templates.regenerate');
 
     // Document type landing page
     Route::get('/documents/{slug}', [DocumentController::class, 'page'])->name('documents.page');
