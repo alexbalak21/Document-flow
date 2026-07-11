@@ -1,0 +1,17 @@
+{
+    "name": "Proposal",
+    "slug": "proposal",
+    "version": "1.0",
+    "author": "Document Flow",
+    "description": "Commercial proposal sent before a formal quote — no legal acceptance block",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "i18n": "i18n.json",
+    "languages": ["en", "fr"],
+    "entities": ["customer", "product"],
+    "icon": "bi-file-earmark-richtext",
+    "sidebar_label": "Proposal",
+    "sidebar_group": "Sales",
+    "prefix": "PROP-"
+}

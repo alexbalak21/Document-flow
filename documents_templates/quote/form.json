@@ -1,23 +1,28 @@
 [
     {
         "section": "Quote",
+        "i18n_section": "form_section_quote",
         "fields": [
             {
                 "type": "text",
                 "name": "quote_number",
                 "label": "Quote Number",
-                "required": true
+                "i18n_label": "form_quote_number",
+                "required": true,
+                "auto": true
             },
             {
                 "type": "date",
                 "name": "quote_date",
                 "label": "Quote Date",
+                "i18n_label": "form_quote_date",
                 "required": true
             },
             {
                 "type": "date",
                 "name": "valid_until",
                 "label": "Valid Until",
+                "i18n_label": "form_valid_until",
                 "required": true
             },
             {
@@ -36,17 +41,20 @@
                 "type": "number",
                 "name": "vat_rate",
                 "label": "VAT Rate (%)",
+                "i18n_label": "form_vat_rate",
                 "required": true
             }
         ]
     },
     {
         "section": "Notes",
+        "i18n_section": "form_section_notes",
         "fields": [
             {
                 "type": "textarea",
                 "name": "notes",
                 "label": "Notes / Special Conditions",
+                "i18n_label": "form_notes",
                 "required": false
             }
         ]

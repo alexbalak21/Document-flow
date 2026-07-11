@@ -1,14 +1,17 @@
 {
     "name": "Quote",
     "slug": "quote",
-    "version": "1.2",
+    "version": "1.4",
     "author": "Document Flow",
-    "description": "Standard quote / commercial proposal with full customer details",
+    "description": "Standard quote with customer details and one product line",
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",
+    "i18n": "i18n.json",
+    "languages": ["en", "fr"],
     "entities": ["customer", "product"],
     "icon": "bi-file-earmark-text",
     "sidebar_label": "Quote",
-    "sidebar_group": "Sales"
+    "sidebar_group": "Sales",
+    "prefix": "Q-"
 }

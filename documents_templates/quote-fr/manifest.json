@@ -10,5 +10,7 @@
     "entities": ["customer", "product"],
     "icon": "bi-file-earmark-text",
     "sidebar_label": "Devis (FR)",
-    "sidebar_group": "Ventes"
+    "sidebar_group": "Ventes",
+    "sidebar_hidden": true,
+    "prefix": "DEV-"
 }

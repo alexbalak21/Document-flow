@@ -1,58 +1,69 @@
 [
     {
         "section": "Invoice",
+        "i18n_section": "form_section_invoice",
         "fields": [
             {
                 "type": "text",
                 "name": "invoice_number",
                 "label": "Invoice Number",
-                "required": true
+                "i18n_label": "form_invoice_number",
+                "required": true,
+                "auto": true
             },
             {
                 "type": "date",
                 "name": "invoice_date",
                 "label": "Invoice Date",
+                "i18n_label": "form_invoice_date",
                 "required": true
             },
             {
                 "type": "date",
                 "name": "due_date",
                 "label": "Due Date",
+                "i18n_label": "form_due_date",
                 "required": true
             },
             {
                 "type": "date",
                 "name": "delivery_date",
                 "label": "Service / Delivery Date",
+                "i18n_label": "form_delivery_date",
                 "required": false
             },
             {
                 "type": "text",
                 "name": "quote_reference",
                 "label": "Quote Reference",
+                "i18n_label": "form_quote_reference",
                 "required": false
             },
             {
                 "type": "text",
                 "name": "purchase_order",
                 "label": "Purchase Order Number",
+                "i18n_label": "form_purchase_order",
                 "required": false
             },
             {
                 "type": "number",
                 "name": "vat_rate",
                 "label": "VAT Rate (%)",
+                "i18n_label": "form_vat_rate",
                 "required": true
             }
         ]
     },
     {
         "section": "Notes",
+        "i18n_section": "form_section_notes",
         "fields": [
             {
                 "type": "textarea",
                 "name": "notes",
                 "label": "Notes",
+                "i18n_label": "form_notes",
                 "required": false
             }
         ]

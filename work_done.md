@@ -948,3 +948,9 @@ number is generated for the new invoice automatically.
 | Quote (EN/FR bilingual) | `Q-` |
 | Facture (FR standalone) | `FACT-` |
 | Devis (FR standalone) | `DEV-` |
+
+---
+---
+
+# V15
+

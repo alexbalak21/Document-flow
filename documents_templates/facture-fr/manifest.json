@@ -10,5 +10,7 @@
     "entities": ["customer", "product"],
     "icon": "bi-receipt",
     "sidebar_label": "Facture (FR)",
-    "sidebar_group": "Ventes"
+    "sidebar_group": "Ventes",
+    "sidebar_hidden": true,
+    "prefix": "FACT-"
 }

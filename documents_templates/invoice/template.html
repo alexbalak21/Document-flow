@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice {{invoice_number}}</title>
+    <title>{{i18n_doc_title}} {{invoice_number}}</title>
     <style>{{style}}</style>
 </head>
 <body>
@@ -28,21 +28,21 @@
                 </div>
             </div>
             <div class="invoice-meta">
-                <div class="invoice-title">INVOICE</div>
+                <div class="invoice-title">{{i18n_doc_title}}</div>
                 <table class="meta-table">
-                    <tr><td>No.</td><td><strong>{{invoice_number}}</strong></td></tr>
-                    <tr><td>Date</td><td>{{invoice_date}}</td></tr>
-                    <tr><td>Due Date</td><td>{{due_date}}</td></tr>
-                    {{#delivery_date}}<tr><td>Service Date</td><td>{{delivery_date}}</td></tr>{{/delivery_date}}
-                    {{#quote_reference}}<tr><td>Quote Ref.</td><td>{{quote_reference}}</td></tr>{{/quote_reference}}
-                    {{#purchase_order}}<tr><td>Purchase Order</td><td>{{purchase_order}}</td></tr>{{/purchase_order}}
+                    <tr><td>{{i18n_doc_number_label}}</td><td><strong>{{invoice_number}}</strong></td></tr>
+                    <tr><td>{{i18n_doc_date_label}}</td><td>{{invoice_date}}</td></tr>
+                    <tr><td>{{i18n_due_date_label}}</td><td>{{due_date}}</td></tr>
+                    {{#delivery_date}}<tr><td>{{i18n_delivery_date_label}}</td><td>{{delivery_date}}</td></tr>{{/delivery_date}}
+                    {{#quote_reference}}<tr><td>{{i18n_quote_ref_label}}</td><td>{{quote_reference}}</td></tr>{{/quote_reference}}
+                    {{#purchase_order}}<tr><td>{{i18n_po_label}}</td><td>{{purchase_order}}</td></tr>{{/purchase_order}}
                 </table>
             </div>
         </div>
 
         <!-- Bill To -->
         <div class="bill-to">
-            <div class="bill-to-label">Bill To</div>
+            <div class="bill-to-label">{{i18n_bill_to_label}}</div>
             <div class="customer-name">{{customer_name}}</div>
             <div class="customer-company">{{customer_company}}</div>
             <div class="customer-department">{{customer_department}}</div>
@@ -63,11 +63,11 @@
             <thead>
                 <tr>
                     <th style="text-align:left; width:11%;">Reference</th>
-                    <th style="text-align:left; width:42%;">Description</th>
-                    <th class="text-right" style="width:7%;">Qty</th>
-                    <th class="text-right" style="width:12%;">Unit Price</th>
+                    <th style="text-align:left; width:42%;">{{i18n_description_col}}</th>
+                    <th class="text-right" style="width:7%;">{{i18n_qty_col}}</th>
+                    <th class="text-right" style="width:12%;">{{i18n_unit_price_col}}</th>
                     <th class="text-right" style="width:8%;">VAT</th>
-                    <th class="text-right" style="width:10%;">Total (excl. VAT)</th>
+                    <th class="text-right" style="width:10%;">{{i18n_amount_col}}</th>
                 </tr>
             </thead>
             <tbody>
@@ -89,10 +89,10 @@
         <!-- Totals -->
         <div class="totals">
             <table>
-                <tr><td>Total (excl. VAT)</td><td class="text-right">{{subtotal}}&nbsp;{{company_currency_symbol}}</td></tr>
-                <tr><td>VAT ({{vat_rate}}&nbsp;%)</td><td class="text-right">{{vat_amount}}&nbsp;{{company_currency_symbol}}</td></tr>
+                <tr><td>{{i18n_subtotal_label}}</td><td class="text-right">{{subtotal}}&nbsp;{{company_currency_symbol}}</td></tr>
+                <tr><td>{{i18n_vat_label}} ({{vat_rate}}&nbsp;%)</td><td class="text-right">{{vat_amount}}&nbsp;{{company_currency_symbol}}</td></tr>
                 <tr class="total-row">
-                    <td><strong>Total (incl. VAT)</strong></td>
+                    <td><strong>{{i18n_total_label}}</strong></td>
                     <td class="text-right"><strong>{{total}}&nbsp;{{company_currency_symbol}}</strong></td>
                 </tr>
             </table>
@@ -106,7 +106,7 @@
         <!-- Notes -->
         {{#notes}}
         <div class="notes">
-            <div class="notes-label">Notes</div>
+            <div class="notes-label">{{i18n_notes_label}}</div>
             <div>{{notes}}</div>
         </div>
         {{/notes}}

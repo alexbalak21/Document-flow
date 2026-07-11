@@ -6,7 +6,8 @@
                 "type": "text",
                 "name": "invoice_number",
                 "label": "Numéro de facture",
-                "required": true
+                "required": true,
+                "auto": true
             },
             {
                 "type": "date",

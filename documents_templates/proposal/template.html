@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{i18n_doc_title}} {{quote_number}}</title>
+    <title>{{i18n_doc_title}} {{proposal_number}}</title>
     <style>{{style}}</style>
 </head>
 <body>
@@ -23,22 +23,22 @@
             <div class="company-legal">
                 {{company_legal_form}}{{#company_share_capital}} — Share Capital: {{company_share_capital}}{{/company_share_capital}}<br>
                 SIREN&nbsp;: {{company_siren}} — SIRET&nbsp;: {{company_siret}}<br>
-                {{#company_rcs}}RCS {{company_rcs}} — {{/company_rcs}}VAT&nbsp;: {{company_vat_number}}
+                VAT&nbsp;: {{company_vat_number}}
             </div>
         </div>
         <div class="invoice-meta">
-            <div class="invoice-title quote-title">{{i18n_doc_title}}</div>
+            <div class="invoice-title">{{i18n_doc_title}}</div>
             <table class="meta-table">
-                <tr><td>{{i18n_doc_number_label}}</td><td><strong>{{quote_number}}</strong></td></tr>
-                <tr><td>{{i18n_doc_date_label}}</td><td>{{quote_date}}</td></tr>
+                <tr><td>{{i18n_doc_number_label}}</td><td><strong>{{proposal_number}}</strong></td></tr>
+                <tr><td>{{i18n_doc_date_label}}</td><td>{{proposal_date}}</td></tr>
                 <tr><td>{{i18n_valid_until_label}}</td><td>{{valid_until}}</td></tr>
                 {{#estimated_start}}<tr><td>{{i18n_delivery_label}}</td><td>{{estimated_start}}</td></tr>{{/estimated_start}}
-                {{#estimated_duration}}<tr><td>Duration</td><td>{{estimated_duration}}</td></tr>{{/estimated_duration}}
+                {{#estimated_duration}}<tr><td>{{i18n_duration_label}}</td><td>{{estimated_duration}}</td></tr>{{/estimated_duration}}
             </table>
         </div>
     </div>
 
-    <!-- Quote For -->
+    <!-- Proposal For -->
     <div class="bill-to">
         <div class="bill-to-label">{{i18n_bill_to_label}}</div>
         <div class="customer-name">{{customer_name}}</div>
@@ -109,38 +109,14 @@
     </div>
     {{/notes}}
 
-    <!-- Client Acceptance Block -->
-    <div class="acceptance-block">
-        <div class="acceptance-title">Client Acceptance</div>
-        <p class="acceptance-text">
-            Quote received prior to execution of work, read and approved, agreed upon.<br>
-            This quote is valid until {{valid_until}}.
-        </p>
-        <div class="acceptance-fields">
-            <div class="acceptance-field">
-                <div class="acceptance-line"></div>
-                <div class="acceptance-label">Client Signature</div>
-            </div>
-            <div class="acceptance-field">
-                <div class="acceptance-line"></div>
-                <div class="acceptance-label">Acceptance Date</div>
-            </div>
-            <div class="acceptance-field">
-                <div class="acceptance-line"></div>
-                <div class="acceptance-label">Company Stamp</div>
-            </div>
-        </div>
+    <!-- Next Steps -->
+    <div class="next-steps">
+        <div class="next-steps-label">{{i18n_next_steps_label}}</div>
+        <div class="next-steps-text">{{i18n_next_steps_text}}</div>
     </div>
 
-    <!-- Legal footer -->
+    <!-- Footer -->
     <div class="doc-footer">
-        <div class="footer-payment">
-            {{company_terms_text}}
-        </div>
-        <div class="footer-legal">
-            {{company_late_payment_text}}<br>
-            {{company_late_payment_fee_text}}
-        </div>
         <div class="footer-identity">
             {{company_name}} — {{company_legal_form}} — Share Capital: {{company_share_capital}} —
             SIRET: {{company_siret}} — VAT: {{company_vat_number}}
