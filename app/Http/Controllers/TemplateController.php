@@ -120,6 +120,46 @@ class TemplateController extends Controller
     }
 
     // -------------------------------------------------------------------------
+    // TOGGLE ACTIVE
+    // -------------------------------------------------------------------------
+
+    public function toggle(DocumentType $template)
+    {
+        $template->update(['active' => ! $template->active]);
+
+        $state = $template->active ? 'enabled' : 'disabled';
+
+        return redirect()->route('templates.index')
+            ->with('success', '"' . $template->name . '" ' . $state . '.');
+    }
+
+    // -------------------------------------------------------------------------
+    // DELETE — removes DB record AND files from disk
+    // -------------------------------------------------------------------------
+
+    public function destroy(DocumentType $template)
+    {
+        // Block deletion if documents exist for this template
+        if ($template->documents()->count() > 0) {
+            return redirect()->route('templates.index')
+                ->with('error', 'Cannot delete "' . $template->name . '" — ' . $template->documents()->count() . ' document(s) exist. Disable it instead.');
+        }
+
+        $templateDir = storage_path('app/templates/' . $template->slug);
+
+        // Delete files from disk
+        if (is_dir($templateDir)) {
+            $this->rmdirRecursive($templateDir);
+        }
+
+        $template->delete();
+
+        return redirect()
+            ->route('templates.index')
+            ->with('success', "Template \"{$template->name}\" deleted.");
+    }
+
+    // -------------------------------------------------------------------------
     // REGENERATE SNAPSHOTS for one template
     // -------------------------------------------------------------------------
 
@@ -128,15 +168,13 @@ class TemplateController extends Controller
         $count      = 0;
         $errors     = [];
         $controller = app(DocumentController::class);
-        $method     = new \ReflectionMethod($controller, 'renderHtml');
-        $method->setAccessible(true);
 
         Document::where('document_type_id', $template->id)
             ->whereNotNull('json_data')
             ->get()
-            ->each(function ($doc) use ($template, $controller, $method, &$count, &$errors) {
+            ->each(function ($doc) use ($template, $controller, &$count, &$errors) {
                 try {
-                    $html = $method->invoke($controller, $template, $doc->json_data);
+                    $html = $controller->renderHtml($template, $doc->json_data);
                     $doc->update(['html_snapshot' => $html]);
                     $count++;
                 } catch (\Throwable $e) {
@@ -219,15 +257,13 @@ class TemplateController extends Controller
                     // Regenerate snapshots
                     $type       = DocumentType::where('slug', $slug)->first();
                     $controller = app(DocumentController::class);
-                    $method     = new \ReflectionMethod($controller, 'renderHtml');
-                    $method->setAccessible(true);
 
                     Document::where('document_type_id', $type->id)
                         ->whereNotNull('json_data')
                         ->get()
-                        ->each(function ($doc) use ($type, $controller, $method, &$errors) {
+                        ->each(function ($doc) use ($type, $controller, &$errors) {
                             try {
-                                $html = $method->invoke($controller, $type, $doc->json_data);
+                                $html = $controller->renderHtml($type, $doc->json_data);
                                 $doc->update(['html_snapshot' => $html]);
                             } catch (\Throwable $e) {
                                 $errors[] = "Doc #{$doc->id}: " . $e->getMessage();

@@ -1,11 +1,14 @@
 {
     "name": "Invoice",
     "slug": "invoice",
-    "version": "1.4",
+    "version": "1.3",
     "author": "Document Flow",
-    "description": "English invoice with mandatory legal mentions, VAT breakdown per line, and company logo",
+    "description": "Standard invoice with full customer details and one product line",
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",
-    "entities": ["customer", "product"]
+    "entities": ["customer", "product"],
+    "icon": "bi-receipt",
+    "sidebar_label": "Invoice",
+    "sidebar_group": "Sales"
 }

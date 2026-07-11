@@ -31,12 +31,7 @@
                 "name": "estimated_duration",
                 "label": "Estimated Duration",
                 "required": false
-            }
-        ]
-    },
-    {
-        "section": "Product & Pricing",
-        "fields": [
+            },
             {
                 "type": "number",
                 "name": "vat_rate",

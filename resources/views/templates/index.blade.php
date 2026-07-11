@@ -112,12 +112,15 @@
                         <p class="small text-muted mb-3">{{ $template->description ?? '—' }}</p>
 
                         <div class="d-flex gap-2 flex-wrap">
+
+                            {{-- Document count --}}
                             <a href="{{ route('documents.page', $template->slug) }}"
                                class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-file-earmark me-1"></i>
                                 {{ $template->documents_count }} doc(s)
                             </a>
 
+                            {{-- Regenerate snapshots --}}
                             @if($template->documents_count > 0)
                             <form method="POST"
                                   action="{{ route('templates.regenerate', $template) }}"
@@ -128,6 +131,35 @@
                                 </button>
                             </form>
                             @endif
+
+                            {{-- Enable / Disable --}}
+                            <form method="POST" action="{{ route('templates.toggle', $template) }}">
+                                @csrf
+                                <button type="submit"
+                                    class="btn btn-sm {{ $template->active ? 'btn-outline-secondary' : 'btn-outline-success' }}"
+                                    title="{{ $template->active ? 'Disable template' : 'Enable template' }}">
+                                    <i class="bi {{ $template->active ? 'bi-pause-circle' : 'bi-play-circle' }} me-1"></i>
+                                    {{ $template->active ? 'Disable' : 'Enable' }}
+                                </button>
+                            </form>
+
+                            {{-- Delete (only if no documents) --}}
+                            @if($template->documents_count === 0)
+                            <form method="POST" action="{{ route('templates.destroy', $template) }}"
+                                  onsubmit="return confirm('Delete \\&quot;{{ $template->name }}\\&quot; and remove all files from disk? This cannot be undone.')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete template">
+                                    <i class="bi bi-trash me-1"></i>Delete
+                                </button>
+                            </form>
+                            @else
+                            <button class="btn btn-sm btn-outline-danger disabled"
+                                title="Cannot delete — {{ $template->documents_count }} document(s) exist. Disable instead.">
+                                <i class="bi bi-trash me-1"></i>Delete
+                            </button>
+                            @endif
+
                         </div>
                     </div>
                     <div class="card-footer bg-white border-0 pt-0">

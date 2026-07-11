@@ -37,12 +37,7 @@
                 "name": "purchase_order",
                 "label": "Purchase Order Number",
                 "required": false
-            }
-        ]
-    },
-    {
-        "section": "Product & Pricing",
-        "fields": [
+            },
             {
                 "type": "number",
                 "name": "vat_rate",

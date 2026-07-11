@@ -85,3 +85,10 @@ For customers and products — click **Import JSON** button → upload or paste 
     "vat_rate": 0
 }
 ```
+
+---
+---
+
+# V12
+
+## Implemented disabling & deleting template modules

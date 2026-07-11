@@ -26,6 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/install',  [TemplateController::class, 'install'])->name('templates.install');
     Route::post('/templates/rescan',   [TemplateController::class, 'rescan'])->name('templates.rescan');
     Route::post('/templates/{template}/regenerate', [TemplateController::class, 'regenerate'])->name('templates.regenerate');
+    Route::post('/templates/{template}/toggle',     [TemplateController::class, 'toggle'])->name('templates.toggle');
+    Route::delete('/templates/{template}',          [TemplateController::class, 'destroy'])->name('templates.destroy');
 
     // Document type landing page
     Route::get('/documents/{slug}', [DocumentController::class, 'page'])->name('documents.page');

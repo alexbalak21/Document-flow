@@ -1,0 +1,14 @@
+{
+    "name": "Devis (FR)",
+    "slug": "quote-fr",
+    "version": "1.0",
+    "author": "Document Flow",
+    "description": "Devis commercial standard — version française",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "entities": ["customer", "product"],
+    "icon": "bi-file-earmark-text",
+    "sidebar_label": "Devis (FR)",
+    "sidebar_group": "Ventes"
+}
