@@ -3,7 +3,7 @@
     "slug": "quote-fr",
     "version": "1.0",
     "author": "Document Flow",
-    "description": "Devis commercial standard — version française",
+    "description": "Devis commercial standard — version française, conforme aux obligations légales 2026",
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",

@@ -1,0 +1,60 @@
+[
+    {
+        "section": "Facture",
+        "fields": [
+            {
+                "type": "text",
+                "name": "invoice_number",
+                "label": "Numéro de facture",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "invoice_date",
+                "label": "Date de facturation",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "due_date",
+                "label": "Date d'échéance",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "delivery_date",
+                "label": "Date de prestation / livraison",
+                "required": false
+            },
+            {
+                "type": "text",
+                "name": "quote_reference",
+                "label": "Référence devis",
+                "required": false
+            },
+            {
+                "type": "text",
+                "name": "purchase_order",
+                "label": "Bon de commande",
+                "required": false
+            },
+            {
+                "type": "number",
+                "name": "vat_rate",
+                "label": "Taux de TVA (%)",
+                "required": true
+            }
+        ]
+    },
+    {
+        "section": "Notes",
+        "fields": [
+            {
+                "type": "textarea",
+                "name": "notes",
+                "label": "Notes / Informations complémentaires",
+                "required": false
+            }
+        ]
+    }
+]

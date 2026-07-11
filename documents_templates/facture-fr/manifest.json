@@ -1,0 +1,14 @@
+{
+    "name": "Facture (FR)",
+    "slug": "facture-fr",
+    "version": "1.0",
+    "author": "Document Flow",
+    "description": "Facture commerciale standard — version française, conforme aux obligations légales 2026",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "entities": ["customer", "product"],
+    "icon": "bi-receipt",
+    "sidebar_label": "Facture (FR)",
+    "sidebar_group": "Ventes"
+}

@@ -1,0 +1,184 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    color: #333;
+    background: #fff;
+}
+
+.page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 20mm 18mm;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #0d9488;
+}
+
+.company-name { font-size: 22px; font-weight: 700; color: #0d9488; }
+.company-sub  { font-size: 11px; color: #888; margin-top: 2px; }
+
+.invoice-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0d9488;
+    text-align: right;
+    margin-bottom: 8px;
+}
+
+.meta-table td          { padding: 2px 8px; font-size: 12px; }
+.meta-table td:first-child { color: #888; text-align: right; }
+
+.bill-to            { margin-bottom: 32px; }
+.bill-to-label      { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 6px; }
+.customer-name      { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+.customer-company   { font-weight: 500; }
+.customer-department { color: #555; }
+.customer-contact   { margin-top: 4px; color: #555; }
+.customer-contact span { margin-right: 12px; }
+.customer-vat       { font-size: 11px; color: #888; margin-top: 2px; }
+
+.items-table              { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+.items-table thead tr     { background: #0d9488; color: #fff; }
+.items-table th           { padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+.items-table th.ref { text-align: left; }
+.items-table td           { padding: 10px 12px; border-bottom: 1px solid #eee; }
+.items-table tbody tr:hover { background: #f0fdfa; }
+
+.totals               { display: flex; justify-content: flex-end; margin-bottom: 32px; }
+.totals table         { min-width: 240px; border-collapse: collapse; }
+.totals td            { padding: 5px 12px; font-size: 13px; }
+.total-row td         { font-size: 15px; border-top: 2px solid #0d9488; padding-top: 8px; }
+
+.notes              { background: #f0fdfa; border-left: 3px solid #0d9488; padding: 12px 16px; margin-bottom: 24px; }
+.notes-label        { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
+
+.quote-footer       { margin-top: 40px; font-size: 12px; color: #555; border-top: 1px solid #eee; padding-top: 16px; }
+.signature-line     { margin-top: 48px; border-top: 1px solid #333; width: 260px; padding-top: 6px; font-size: 11px; color: #888; }
+
+.text-right { text-align: right; }
+
+.brand-logo     { max-height: 48px; margin-bottom: 6px; display: block; }
+.company-address { font-size: 11px; color: #555; margin-top: 2px; }
+.company-contact { font-size: 11px; color: #555; }
+.company-legal   { font-size: 10px; color: #888; margin-top: 4px; }
+
+.vat-mention {
+    font-size: 10px;
+    color: #888;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+    margin-bottom: 12px;
+    font-style: italic;
+}
+
+.doc-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 10px;
+    color: #999;
+}
+
+/* Vertical separators between table columns */
+.items-table th + th,
+.items-table td + td {
+    border-left: 1px solid rgba(0,0,0,.08);
+}
+
+/* Item name + unit stacked in description cell */
+.item-name {
+    display: block;
+    font-weight: 500;
+}
+.item-unit {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* Vertical separators between table columns */
+.items-table th + th,
+.items-table td + td {
+    border-left: 1px solid rgba(0,0,0,.08);
+}
+
+/* Description cell sub-text */
+.item-desc {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+    font-style: italic;
+}
+
+/* Client acceptance block */
+.acceptance-block {
+    margin-top: 40px;
+    border: 1px solid #0d9488;
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+.acceptance-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #0d9488;
+    margin-bottom: 8px;
+}
+.acceptance-text {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+.acceptance-fields {
+    display: flex;
+    gap: 32px;
+}
+.acceptance-field {
+    flex: 1;
+}
+.acceptance-line {
+    border-bottom: 1px solid #333;
+    height: 40px;
+    margin-bottom: 6px;
+}
+.acceptance-label {
+    font-size: 10px;
+    color: #888;
+}
+
+/* Footer sections */
+.doc-footer {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 10px;
+    color: #999;
+}
+.footer-payment {
+    margin-bottom: 4px;
+    color: #666;
+}
+.footer-legal {
+    margin-bottom: 6px;
+    font-style: italic;
+}
+.footer-identity {
+    margin-top: 6px;
+    border-top: 1px dotted #ddd;
+    padding-top: 4px;
+    color: #bbb;
+}

@@ -1,0 +1,54 @@
+[
+    {
+        "section": "Devis",
+        "fields": [
+            {
+                "type": "text",
+                "name": "quote_number",
+                "label": "Numéro de devis",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "quote_date",
+                "label": "Date du devis",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "valid_until",
+                "label": "Valable jusqu'au",
+                "required": true
+            },
+            {
+                "type": "date",
+                "name": "estimated_start",
+                "label": "Date de début estimée",
+                "required": false
+            },
+            {
+                "type": "text",
+                "name": "estimated_duration",
+                "label": "Durée estimée",
+                "required": false
+            },
+            {
+                "type": "number",
+                "name": "vat_rate",
+                "label": "Taux de TVA (%)",
+                "required": true
+            }
+        ]
+    },
+    {
+        "section": "Notes",
+        "fields": [
+            {
+                "type": "textarea",
+                "name": "notes",
+                "label": "Notes / Conditions particulières",
+                "required": false
+            }
+        ]
+    }
+]

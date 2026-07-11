@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Devis {{quote_number}}</title>
+    <style>{{style}}</style>
+</head>
+<body>
+<div class="page">
+
+    <!-- En-tête -->
+    <div class="header">
+        <div class="company-block">
+            {{#company_logo}}
+            <img src="{{company_logo}}" alt="{{company_name}}" class="brand-logo">
+            {{/company_logo}}
+            <div class="company-name">{{company_name}}</div>
+            <div class="company-address">
+                {{company_street}}<br>
+                {{company_zip}} {{company_city}} — {{company_country}}
+            </div>
+            <div class="company-contact">{{company_email}}</div>
+            <div class="company-legal">
+                {{company_legal_form}}{{#company_share_capital}} — Capital&nbsp;: {{company_share_capital}}{{/company_share_capital}}<br>
+                SIREN&nbsp;: {{company_siren}} — SIRET&nbsp;: {{company_siret}}<br>
+                {{#company_rcs}}RCS {{company_rcs}} — {{/company_rcs}}N° TVA&nbsp;: {{company_vat_number}}
+            </div>
+        </div>
+        <div class="invoice-meta">
+            <div class="invoice-title quote-title">DEVIS</div>
+            <table class="meta-table">
+                <tr><td>N°</td><td><strong>{{quote_number}}</strong></td></tr>
+                <tr><td>Date</td><td>{{quote_date}}</td></tr>
+                <tr><td>Valable jusqu'au</td><td>{{valid_until}}</td></tr>
+                {{#estimated_start}}<tr><td>Début estimé</td><td>{{estimated_start}}</td></tr>{{/estimated_start}}
+                {{#estimated_duration}}<tr><td>Durée estimée</td><td>{{estimated_duration}}</td></tr>{{/estimated_duration}}
+            </table>
+        </div>
+    </div>
+
+    <!-- Destinataire -->
+    <div class="bill-to">
+        <div class="bill-to-label">Devis établi pour</div>
+        <div class="customer-name">{{customer_name}}</div>
+        <div class="customer-company">{{customer_company}}</div>
+        <div class="customer-department">{{customer_department}}</div>
+        <div>{{customer_street}}</div>
+        <div>{{customer_zip}} {{customer_city}}</div>
+        <div>{{customer_country}}</div>
+        <div class="customer-contact">
+            {{#customer_phone}}<span>&#9990; {{customer_phone}}</span>{{/customer_phone}}
+            {{#customer_email}}<span>&#9993; {{customer_email}}</span>{{/customer_email}}
+        </div>
+        {{#customer_vat_number}}
+        <div class="customer-vat">N° TVA intracommunautaire&nbsp;: {{customer_vat_number}}</div>
+        {{/customer_vat_number}}
+    </div>
+
+    <!-- Tableau des prestations -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="text-align:left; width:11%;">Référence</th>
+                <th style="text-align:left; width:42%;">Désignation</th>
+                <th class="text-right" style="width:7%;">Qté</th>
+                <th class="text-right" style="width:12%;">P.U. HT</th>
+                <th class="text-right" style="width:8%;">TVA</th>
+                <th class="text-right" style="width:10%;">Total HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="vertical-align:top;">{{product_reference}}</td>
+                <td>
+                    <span class="item-name">{{product_name}}</span>
+                    {{#product_unit}}<span class="item-unit">{{product_unit}}</span>{{/product_unit}}
+                    {{#product_description}}<span class="item-desc">{{product_description}}</span>{{/product_description}}
+                </td>
+                <td class="text-right" style="vertical-align:top;">{{product_quantity}}</td>
+                <td class="text-right" style="vertical-align:top;">{{product_unit_price}}&nbsp;{{company_currency_symbol}}</td>
+                <td class="text-right" style="vertical-align:top;">{{vat_rate}}&nbsp;%</td>
+                <td class="text-right" style="vertical-align:top;">{{subtotal}}&nbsp;{{company_currency_symbol}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Totaux -->
+    <div class="totals">
+        <table>
+            <tr><td>Total HT</td><td class="text-right">{{subtotal}}&nbsp;{{company_currency_symbol}}</td></tr>
+            <tr><td>TVA ({{vat_rate}}&nbsp;%)</td><td class="text-right">{{vat_amount}}&nbsp;{{company_currency_symbol}}</td></tr>
+            <tr class="total-row">
+                <td><strong>Total TTC</strong></td>
+                <td class="text-right"><strong>{{total}}&nbsp;{{company_currency_symbol}}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Mention TVA -->
+    {{#company_vat_mention}}
+    <div class="vat-mention">{{company_vat_mention}}</div>
+    {{/company_vat_mention}}
+
+    <!-- Notes -->
+    {{#notes}}
+    <div class="notes">
+        <div class="notes-label">Notes / Conditions particulières</div>
+        <div>{{notes}}</div>
+    </div>
+    {{/notes}}
+
+    <!-- Bloc d'acceptation client (obligatoire) -->
+    <div class="acceptance-block">
+        <div class="acceptance-title">Bon pour accord</div>
+        <p class="acceptance-text">
+            Devis reçu avant exécution des travaux, lu et approuvé, bon pour accord.<br>
+            Ce devis est valable jusqu'au {{valid_until}}.
+        </p>
+        <div class="acceptance-fields">
+            <div class="acceptance-field">
+                <div class="acceptance-line"></div>
+                <div class="acceptance-label">Signature du client</div>
+            </div>
+            <div class="acceptance-field">
+                <div class="acceptance-line"></div>
+                <div class="acceptance-label">Date d'acceptation</div>
+            </div>
+            <div class="acceptance-field">
+                <div class="acceptance-line"></div>
+                <div class="acceptance-label">Cachet de la société</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pied de page -->
+    <div class="doc-footer">
+        <div class="footer-payment">
+            {{#company_terms_text}}{{company_terms_text}}{{/company_terms_text}}{{^company_terms_text}}Paiement à réception de facture, sauf accord préalable entre les parties.{{/company_terms_text}}
+        </div>
+        <div class="footer-legal">
+            {{#company_late_payment_text}}{{company_late_payment_text}}{{/company_late_payment_text}}{{^company_late_payment_text}}Tout retard de paiement entraîne des pénalités de retard exigibles dès le lendemain de la date d'échéance (art. L.441-10 du Code de commerce).{{/company_late_payment_text}}<br>
+            {{#company_late_payment_fee_text}}{{company_late_payment_fee_text}}{{/company_late_payment_fee_text}}{{^company_late_payment_fee_text}}Une indemnité forfaitaire de recouvrement de 40 € est due de plein droit en cas de retard de paiement (art. D.441-5 du Code de commerce).{{/company_late_payment_fee_text}}
+        </div>
+        <div class="footer-identity">
+            {{company_name}} — {{company_legal_form}} — Capital&nbsp;: {{company_share_capital}} —
+            SIRET&nbsp;: {{company_siret}} — N° TVA&nbsp;: {{company_vat_number}}
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
