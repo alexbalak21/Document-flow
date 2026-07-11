@@ -237,6 +237,12 @@
             <span class="nav-text">Customers</span>
         </a>
 
+        <a href="{{ route('products.index') }}"
+           class="nav-item-link {{ request()->routeIs('products.*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i>
+            <span class="nav-text">Products</span>
+        </a>
+
         <a href="{{ route('templates.index') }}"
            class="nav-item-link {{ request()->routeIs('templates.*') ? 'active' : '' }}">
             <i class="bi bi-puzzle"></i>

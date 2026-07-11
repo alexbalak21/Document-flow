@@ -92,6 +92,13 @@
                                     <i class="bi bi-eye"></i>
                                 </a>
 
+                                {{-- Export JSON --}}
+                                <a href="{{ route('export.document', $doc) }}"
+                                   class="btn btn-sm btn-outline-info"
+                                   title="Export JSON">
+                                    <i class="bi bi-download"></i>
+                                </a>
+
                                 {{-- Edit (draft only) --}}
                                 @if($doc->canBeEdited())
                                 <a href="{{ route('documents.edit', $doc) }}"

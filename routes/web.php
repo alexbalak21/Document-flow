@@ -7,6 +7,8 @@ use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CompanySettingsController;
+use App\Http\Controllers\ImportExportController;
+use App\Http\Controllers\ProductController;
 
 // Auth
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login')->middleware('guest');
@@ -46,6 +48,25 @@ Route::middleware('auth')->group(function () {
     // Company settings
     Route::get('/settings/company', [CompanySettingsController::class, 'edit'])->name('settings.company');
     Route::put('/settings/company', [CompanySettingsController::class, 'update'])->name('settings.company.update');
+
+    // Products
+    Route::get('/products',                  [ProductController::class, 'index'])->name('products.index');
+    Route::post('/products',                 [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{product}/edit',   [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}',        [ProductController::class, 'update'])->name('products.update');
+
+    // Import / Export
+    Route::get('/export/document/{document}',        [ImportExportController::class, 'documentExport'])->name('export.document');
+    Route::get('/export/document-model/{slug}',      [ImportExportController::class, 'documentModel'])->name('export.document.model');
+    Route::post('/import/document/{slug}',           [ImportExportController::class, 'documentImport'])->name('import.document');
+
+    Route::get('/export/customer/{customer}',        [ImportExportController::class, 'customerExport'])->name('export.customer');
+    Route::get('/export/customer-model',             [ImportExportController::class, 'customerModel'])->name('export.customer.model');
+    Route::post('/import/customer',                  [ImportExportController::class, 'customerImport'])->name('import.customer');
+
+    Route::get('/export/product/{product}',          [ImportExportController::class, 'productExport'])->name('export.product');
+    Route::get('/export/product-model',              [ImportExportController::class, 'productModel'])->name('export.product.model');
+    Route::post('/import/product',                   [ImportExportController::class, 'productImport'])->name('import.product');
 
     // Customers
     Route::get('/customers',                   [CustomerController::class, 'index'])->name('customers.index');

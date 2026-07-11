@@ -21,6 +21,70 @@
 
     @php $prefill = session('convert_data', []); @endphp
 
+    {{-- ================================================================ --}}
+    {{-- JSON IMPORT / EXPORT PANEL                                        --}}
+    {{-- ================================================================ --}}
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center"
+             style="cursor:pointer;" onclick="toggleImportPanel()">
+            <span class="fw-semibold">
+                <i class="bi bi-arrow-left-right me-2 text-info"></i>Import / Export JSON
+            </span>
+            <i class="bi bi-chevron-down" id="import-chevron"></i>
+        </div>
+        <div id="import-panel" style="display:none;">
+            <div class="card-body">
+                <div class="row g-3">
+                    {{-- Download blank model --}}
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="fw-medium small mb-1">
+                                <i class="bi bi-download me-1 text-primary"></i>Download blank model
+                            </div>
+                            <p class="text-muted small mb-2">
+                                Get an empty JSON template showing all fields for this document type.
+                            </p>
+                            <a href="{{ route('export.document.model', $type->slug) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                Download {{ $type->name }} model
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- Upload JSON file --}}
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="fw-medium small mb-1">
+                                <i class="bi bi-upload me-1 text-success"></i>Import from file
+                            </div>
+                            <p class="text-muted small mb-2">Upload a filled JSON file to auto-fill the form.</p>
+                            <input type="file" id="json-file-input" accept=".json" class="form-control form-control-sm mb-2">
+                            <button type="button" class="btn btn-sm btn-success" onclick="importFromFile()">
+                                Fill form from file
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Paste JSON text --}}
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="fw-medium small mb-1">
+                                <i class="bi bi-clipboard me-1 text-warning"></i>Paste JSON
+                            </div>
+                            <textarea id="json-text-input" class="form-control form-control-sm mb-2"
+                                rows="3" placeholder='{"customer_name":"John","quote_number":"Q-001",...}'></textarea>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="importFromText()">
+                                Fill form from text
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="import-error" class="alert alert-danger mt-2 py-2 d-none small"></div>
+                <div id="import-success" class="alert alert-success mt-2 py-2 d-none small"></div>
+            </div>
+        </div>
+    </div>
+
     <form method="POST" action="{{ route('documents.store', $type->slug) }}">
         @csrf
 
@@ -342,5 +406,65 @@ document.getElementById('saveNewCustomer')?.addEventListener('click', async func
     picker.dispatchEvent(new Event('change'));
     bootstrap.Modal.getInstance(document.getElementById('newCustomerModal')).hide();
 });
+
+// ── Import/Export Panel ────────────────────────────────────────────────────
+function toggleImportPanel() {
+    const panel   = document.getElementById('import-panel');
+    const chevron = document.getElementById('import-chevron');
+    const open    = panel.style.display === 'none';
+    panel.style.display   = open ? 'block' : 'none';
+    chevron.className     = open ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+}
+
+async function importFromFile() {
+    const file = document.getElementById('json-file-input').files[0];
+    if (!file) { showImportError('Please select a JSON file first.'); return; }
+
+    const text = await file.text();
+    await sendImport(null, text);
+}
+
+async function importFromText() {
+    const text = document.getElementById('json-text-input').value.trim();
+    if (!text) { showImportError('Please paste JSON text first.'); return; }
+    await sendImport(null, text);
+}
+
+async function sendImport(file, text) {
+    const formData = new FormData();
+    if (text) formData.append('json_text', text);
+
+    const res = await fetch('{{ route("import.document", $type->slug) }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+        body: formData,
+    });
+
+    const json = await res.json();
+
+    if (json.error) { showImportError(json.error); return; }
+
+    let filled = 0;
+    for (const [name, value] of Object.entries(json.fields)) {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el) { el.value = value ?? ''; filled++; }
+    }
+
+    showImportSuccess(`${filled} field(s) filled from JSON.`);
+}
+
+function showImportError(msg) {
+    const el = document.getElementById('import-error');
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    document.getElementById('import-success').classList.add('d-none');
+}
+
+function showImportSuccess(msg) {
+    const el = document.getElementById('import-success');
+    el.textContent = msg;
+    el.classList.remove('d-none');
+    document.getElementById('import-error').classList.add('d-none');
+}
 </script>
 @endsection

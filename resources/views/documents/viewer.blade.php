@@ -159,6 +159,9 @@
         </a>
         @endif
 
+        <a href="{{ route('export.document', $document) }}" class="df-btn">
+            ↓ Export JSON
+        </a>
         <button onclick="printDoc()" class="df-btn df-btn-print">⎙ Print / Save PDF</button>
     </div>
 

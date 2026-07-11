@@ -704,3 +704,9 @@ In `manifest.json`:
 | `icon` | No | `bi-file-earmark-text` | Bootstrap Icons class |
 | `sidebar_label` | No | same as `name` | Short label for sidebar |
 | `sidebar_group` | No | `Documents` | Section group in sidebar |
+
+---
+---
+
+# V11
+
