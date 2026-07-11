@@ -4,15 +4,9 @@
 
 @section('content')
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="fw-semibold mb-0">{{ $type->name }}</h4>
-        <p class="text-muted small mb-0">{{ $type->description ?? '' }}</p>
-    </div>
-    <span class="badge text-bg-secondary">v{{ $type->version }}</span>
-</div>
+<x-ui.page-header :title="$type->name" :subtitle="$type->description ?? ''" :badge="'v' . $type->version" />
 
-{{-- ── Action cards ──────────────────────────────────────────────────────── --}}
+{{-- Action cards --}}
 <div class="row g-3 mb-4">
 
     {{-- Create new --}}
@@ -26,15 +20,14 @@
                 <p class="text-muted small flex-grow-1">
                     Start a blank {{ strtolower($type->name) }} from scratch.
                 </p>
-                <a href="{{ route('documents.create', $type->slug) }}"
-                   class="btn btn-primary mt-2">
+                <a href="{{ route('documents.create', $type->slug) }}" class="btn btn-primary mt-2">
                     <i class="bi bi-plus-lg me-1"></i>Create {{ $type->name }}
                 </a>
             </div>
         </div>
     </div>
 
-    {{-- Convert from (only shown when a source type is available and has accepted docs) --}}
+    {{-- Convert-from cards --}}
     @foreach($convertSources as $source)
     <div class="col-md-4">
         <div class="card border-0 shadow-sm h-100 border-start border-success border-3">
@@ -53,9 +46,7 @@
                     </p>
                 @else
                     <div class="mt-2">
-                        <label class="form-label small fw-medium">
-                            Select {{ $source['type']->name }}
-                        </label>
+                        <label class="form-label small fw-medium">Select {{ $source['type']->name }}</label>
                         <div class="input-group">
                             <select class="form-select form-select-sm"
                                     id="convert-select-{{ $source['type']->slug }}">
@@ -67,8 +58,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            <form method="POST" id="convert-form-{{ $source['type']->slug }}"
-                                  action="">
+                            <form method="POST" id="convert-form-{{ $source['type']->slug }}" action="">
                                 @csrf
                                 <button type="submit" class="btn btn-success btn-sm"
                                     onclick="return prepareConvert('{{ $source['type']->slug }}')">
@@ -85,7 +75,7 @@
 
 </div>
 
-{{-- ── Recent documents of this type ───────────────────────────────────────── --}}
+{{-- Recent documents --}}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h6 class="fw-semibold text-muted text-uppercase mb-0" style="font-size:11px;letter-spacing:1px;">
         Recent {{ $type->name }}s
@@ -95,12 +85,9 @@
 </div>
 
 @if($recentDocs->isEmpty())
-    <div class="card border-0 shadow-sm">
-        <div class="card-body text-center text-muted py-5">
-            No {{ strtolower($type->name) }}s yet.
-            <a href="{{ route('documents.create', $type->slug) }}">Create the first one.</a>
-        </div>
-    </div>
+    <x-ui.empty-state :message="'No ' . strtolower($type->name) . 's yet.'">
+        <a href="{{ route('documents.create', $type->slug) }}">Create the first one.</a>
+    </x-ui.empty-state>
 @else
     <div class="card border-0 shadow-sm">
         <div class="table-responsive">
@@ -124,10 +111,7 @@
                                 <span class="text-muted small">· {{ $doc->customer->company }}</span>
                             @endif
                         </td>
-                        <td>
-                            @php $color = \App\Models\Document::$statusColors[$doc->status] ?? 'secondary'; @endphp
-                            <span class="badge text-bg-{{ $color }}">{{ ucfirst($doc->status) }}</span>
-                        </td>
+                        <td><x-ui.status-badge :status="$doc->status" /></td>
                         <td class="text-muted small">{{ $doc->created_at->format('d/m/Y') }}</td>
                         <td class="pe-3 text-end">
                             <a href="{{ route('documents.show', $doc) }}" target="_blank"
