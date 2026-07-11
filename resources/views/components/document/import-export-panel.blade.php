@@ -61,8 +61,8 @@
                     </div>
                 </div>
             </div>
-            <div id="import-error" class="alert alert-danger mt-2 py-2 d-none small"></div>
-            <div id="import-success" class="alert alert-success mt-2 py-2 d-none small"></div>
+            <x-ui.alert type="danger"  id="import-error"   :hidden="true" :small="true" mt="2" />
+            <x-ui.alert type="success" id="import-success" :hidden="true" :small="true" mt="2" />
         </div>
     </div>
 </div>

@@ -3,11 +3,8 @@
     Renders session flash alerts (success / error / info).
     Drop-in replacement for the repeated @if(session(...)) blocks.
 --}}
-@foreach(['success' => 'alert-success', 'error' => 'alert-danger', 'info' => 'alert-info'] as $key => $class)
+@foreach(['success' => 'success', 'error' => 'danger', 'info' => 'info'] as $key => $type)
     @if(session($key))
-    <div class="alert {{ $class }} alert-dismissible fade show py-2" role="alert">
-        {{ session($key) }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+        <x-ui.alert :type="$type">{{ session($key) }}</x-ui.alert>
     @endif
 @endforeach

@@ -13,7 +13,7 @@
     </div>
 
     @if($errors->any())
-        <div class="alert alert-danger py-2">{{ $errors->first() }}</div>
+        <x-ui.alert type="danger" :dismissible="false">{{ $errors->first() }}</x-ui.alert>
     @endif
 
     <div class="card border-0 shadow-sm">

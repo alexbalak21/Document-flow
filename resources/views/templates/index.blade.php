@@ -55,28 +55,22 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <x-ui.alert type="success">{{ session('success') }}</x-ui.alert>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show py-2">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <x-ui.alert type="danger">{{ session('error') }}</x-ui.alert>
     @endif
 
     @if(session('errors_list') && count(session('errors_list')))
-        <div class="alert alert-warning">
+        <x-ui.alert type="warning">
             <strong>Issues:</strong>
             <ul class="mb-0 mt-1">
                 @foreach(session('errors_list') as $err)
                     <li>{{ $err }}</li>
                 @endforeach
             </ul>
-        </div>
+        </x-ui.alert>
     @endif
 
     @if($templates->isEmpty())

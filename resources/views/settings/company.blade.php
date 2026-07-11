@@ -13,7 +13,7 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success py-2">{{ session('success') }}</div>
+        <x-ui.alert type="success">{{ session('success') }}</x-ui.alert>
     @endif
 
     <form method="POST" action="{{ route('settings.company.update') }}" enctype="multipart/form-data">

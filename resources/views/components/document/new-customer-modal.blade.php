@@ -11,7 +11,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="modal-errors" class="alert alert-danger d-none"></div>
+                <x-ui.alert type="danger" id="modal-errors" :hidden="true" />
                 <div class="row g-3">
                     <div class="col-md-6"><label class="form-label fw-medium">Full Name <span class="text-danger">*</span></label><input type="text" id="m_name" class="form-control" required></div>
                     <div class="col-md-6"><label class="form-label fw-medium">Company</label><input type="text" id="m_company" class="form-control"></div>

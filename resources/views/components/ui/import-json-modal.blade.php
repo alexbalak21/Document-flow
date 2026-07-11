@@ -26,8 +26,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="{{ $errorDivId }}" class="alert alert-danger d-none py-2 small"></div>
-                <div id="{{ $successDivId }}" class="alert alert-success d-none py-2 small"></div>
+                <x-ui.alert type="danger"  :id="$errorDivId"   :hidden="true" :small="true" />
+                <x-ui.alert type="success" :id="$successDivId" :hidden="true" :small="true" />
 
                 <div class="mb-3">
                     <label class="form-label fw-medium small">Upload JSON file</label>

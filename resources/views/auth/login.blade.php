@@ -17,7 +17,7 @@
         <div class="card-body p-4">
 
             @if ($errors->any())
-                <div class="alert alert-danger py-2 small">
+                <x-ui.alert type="danger" :dismissible="false" :small="true">
                     <i class="bi bi-exclamation-circle me-1"></i>
                     {{ $errors->first() }}
                 </div>

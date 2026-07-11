@@ -26,10 +26,7 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success py-2 alert-dismissible fade show">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <x-ui.alert type="success">{{ session('success') }}</x-ui.alert>
     @endif
 
     @if($products->isEmpty())
@@ -112,8 +109,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="prod-import-error" class="alert alert-danger d-none py-2 small"></div>
-                <div id="prod-import-success" class="alert alert-success d-none py-2 small"></div>
+                <x-ui.alert type="danger"  id="prod-import-error"   :hidden="true" :small="true" />
+                <x-ui.alert type="success" id="prod-import-success" :hidden="true" :small="true" />
                 <div class="mb-3">
                     <label class="form-label fw-medium small">Upload JSON file</label>
                     <input type="file" id="prod-json-file" accept=".json" class="form-control form-control-sm">
