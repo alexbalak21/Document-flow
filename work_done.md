@@ -801,3 +801,7 @@ For customers and products — click **Import JSON** button → upload or paste 
 ---
 ---
 
+# V13
+
+Included the FR / ENG version directly in Create when creating a document.
+

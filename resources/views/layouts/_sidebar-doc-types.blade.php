@@ -1,6 +1,7 @@
 {{-- Dynamic document-type nav groups --}}
 @php
-    $docTypes = \App\Models\DocumentType::where('active', true)->orderBy('sidebar_group')->orderBy('name')->get();
+    $docTypes = \App\Models\DocumentType::where('active', true)->orderBy('sidebar_group')->orderBy('name')->get()
+                    ->reject(fn($dt) => $dt->sidebar_hidden);
     $groups   = $docTypes->groupBy(fn($dt) => $dt->sidebar_group ?: 'Documents');
 @endphp
 

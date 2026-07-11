@@ -62,6 +62,17 @@ class DocumentType extends Model
     }
 
     /**
+     * Whether this type should be hidden from the sidebar.
+     * Controlled by "sidebar_hidden": true in manifest.json.
+     * Used to hide legacy standalone-language variants (e.g. facture-fr, quote-fr)
+     * that have been superseded by a multilingual template.
+     */
+    public function getSidebarHiddenAttribute(): bool
+    {
+        return (bool) ($this->readManifest()['sidebar_hidden'] ?? false);
+    }
+
+    /**
      * The label shown in the sidebar — falls back to name.
      */
     public function getSidebarLabelDisplayAttribute(): string
