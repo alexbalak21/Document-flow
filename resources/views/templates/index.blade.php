@@ -8,21 +8,48 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-semibold mb-0">Templates</h4>
         <div class="d-flex gap-2">
-            {{-- Scan & Install: only adds NEW templates --}}
             <form method="POST" action="{{ route('templates.install') }}">
                 @csrf
                 <button class="btn btn-outline-primary">
                     <i class="bi bi-download me-1"></i>Scan &amp; Install
                 </button>
             </form>
-
-            {{-- Rescan & Update: updates ALL templates + regenerates all snapshots --}}
             <form method="POST" action="{{ route('templates.rescan') }}"
-                  onsubmit="return confirm('This will update all template records and regenerate every saved document snapshot. Continue?')">
+                  onsubmit="return confirm('This will update all templates and regenerate every saved document snapshot. Continue?')">
                 @csrf
                 <button class="btn btn-warning">
                     <i class="bi bi-arrow-clockwise me-1"></i>Rescan &amp; Update All
                 </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- Upload ZIP package --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white fw-semibold">
+            <i class="bi bi-upload me-2 text-primary"></i>Upload Template Package (.zip)
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ route('templates.upload') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="d-flex gap-3 align-items-end">
+                    <div class="flex-grow-1">
+                        <label class="form-label fw-medium small">
+                            Select a template package ZIP
+                        </label>
+                        <input type="file" name="package" class="form-control" accept=".zip" required>
+                        <div class="form-text">
+                            ZIP must contain: <code>manifest.json</code>, <code>template.html</code>,
+                            <code>form.json</code>, <code>style.css</code>.
+                            Existing templates with the same slug will be updated automatically.
+                        </div>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-cloud-upload me-1"></i>Upload &amp; Install
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
@@ -34,9 +61,16 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show py-2">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     @if(session('errors_list') && count(session('errors_list')))
         <div class="alert alert-warning">
-            <strong>Some issues occurred:</strong>
+            <strong>Issues:</strong>
             <ul class="mb-0 mt-1">
                 @foreach(session('errors_list') as $err)
                     <li>{{ $err }}</li>
@@ -48,9 +82,8 @@
     @if($templates->isEmpty())
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center text-muted py-5">
-                No templates installed yet.
-                Click <strong>Scan &amp; Install</strong> to load templates from
-                <code>storage/app/templates/</code>.
+                No templates installed yet. Upload a package above or click
+                <strong>Scan &amp; Install</strong>.
             </div>
         </div>
     @else
@@ -60,7 +93,10 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-1">
-                            <h6 class="fw-semibold mb-0">{{ $template->name }}</h6>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi {{ $template->icon_display }} text-primary fs-5"></i>
+                                <h6 class="fw-semibold mb-0">{{ $template->name }}</h6>
+                            </div>
                             @if($template->active)
                                 <span class="badge text-bg-success">Active</span>
                             @else
@@ -69,22 +105,23 @@
                         </div>
                         <div class="text-muted small mb-1">
                             v{{ $template->version }} · <code>{{ $template->slug }}</code>
+                            @if($template->sidebar_group)
+                                · <span class="badge text-bg-light text-dark border">{{ $template->sidebar_group }}</span>
+                            @endif
                         </div>
                         <p class="small text-muted mb-3">{{ $template->description ?? '—' }}</p>
 
                         <div class="d-flex gap-2 flex-wrap">
-                            {{-- Link to document page --}}
                             <a href="{{ route('documents.page', $template->slug) }}"
                                class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-file-earmark me-1"></i>
                                 {{ $template->documents_count }} doc(s)
                             </a>
 
-                            {{-- Regenerate snapshots for this template only --}}
                             @if($template->documents_count > 0)
                             <form method="POST"
                                   action="{{ route('templates.regenerate', $template) }}"
-                                  onsubmit="return confirm('Regenerate all {{ $template->documents_count }} {{ $template->name }} snapshot(s) with the current template?')">
+                                  onsubmit="return confirm('Regenerate all {{ $template->documents_count }} snapshot(s)?')">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-outline-warning">
                                     <i class="bi bi-arrow-repeat me-1"></i>Regenerate
@@ -93,7 +130,6 @@
                             @endif
                         </div>
                     </div>
-
                     <div class="card-footer bg-white border-0 pt-0">
                         <small class="text-muted">
                             <i class="bi bi-folder me-1"></i>
@@ -105,6 +141,27 @@
             @endforeach
         </div>
     @endif
+
+    {{-- Multi-language guide --}}
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-header bg-white fw-semibold">
+            <i class="bi bi-translate me-2 text-info"></i>Multi-language Templates
+        </div>
+        <div class="card-body">
+            <p class="small text-muted mb-2">
+                To add a language variant, create a separate template package with a different slug.
+                Use <code>sidebar_group</code> in <code>manifest.json</code> to group them together in the sidebar.
+            </p>
+            <pre class="bg-light rounded p-3 small mb-0">{
+    "name": "Devis (FR)",
+    "slug": "quote-fr",
+    "icon": "bi-file-earmark-text",
+    "sidebar_label": "Devis (FR)",
+    "sidebar_group": "Ventes",
+    "entities": ["customer", "product"]
+}</pre>
+        </div>
+    </div>
 
 </div>
 @endsection

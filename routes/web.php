@@ -20,6 +20,7 @@ Route::middleware('auth')->group(function () {
 
     // Templates
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
+    Route::post('/templates/upload',   [TemplateController::class, 'upload'])->name('templates.upload');
     Route::post('/templates/install',  [TemplateController::class, 'install'])->name('templates.install');
     Route::post('/templates/rescan',   [TemplateController::class, 'rescan'])->name('templates.rescan');
     Route::post('/templates/{template}/regenerate', [TemplateController::class, 'regenerate'])->name('templates.regenerate');
@@ -38,8 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/history/{document}/raw', [DocumentController::class, 'raw'])->name('documents.raw');
     Route::get('/documents/{document}/edit',   [DocumentController::class, 'edit'])->name('documents.edit');
     Route::put('/documents/{document}/update', [DocumentController::class, 'update'])->name('documents.update');
-    Route::get('/history/{document}/raw', [DocumentController::class, 'raw'])->name('documents.raw');
-
     // Status & Convert
     Route::post('/documents/{document}/status',  [DocumentController::class, 'updateStatus'])->name('documents.status');
     Route::post('/documents/{document}/convert', [DocumentController::class, 'convert'])->name('documents.convert');
