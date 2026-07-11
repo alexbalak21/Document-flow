@@ -64,7 +64,17 @@ class DocumentController extends Controller
         $entities   = $this->entityResolver->forManifest($manifest);
         $entityData = $this->entityResolver->loadAll($entities);
 
-        return view('documents.create', compact('type', 'form', 'entities', 'entityData'));
+        // i18n: load translations if the template declares languages
+        $languages = $manifest['languages'] ?? [];
+        $i18n      = [];
+        if (! empty($languages) && isset($manifest['i18n'])) {
+            $i18nPath = storage_path('app/templates/' . $slug . '/' . $manifest['i18n']);
+            if (file_exists($i18nPath)) {
+                $i18n = json_decode(file_get_contents($i18nPath), true) ?? [];
+            }
+        }
+
+        return view('documents.create', compact('type', 'form', 'entities', 'entityData', 'languages', 'i18n'));
     }
 
     // -------------------------------------------------------------------------
@@ -128,7 +138,8 @@ class DocumentController extends Controller
         $linkedIds = $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
 
         $data = $this->computeTotals($slug, $data);
-        $html = $this->renderHtml($type, $data);
+        $lang = $request->input('lang', 'en');
+        $html = $this->renderHtml($type, $data, $lang);
 
         $reference = $data[$slug . '_number']
             ?? $data['invoice_number']
@@ -171,7 +182,8 @@ class DocumentController extends Controller
         $linkedIds = $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
 
         $data = $this->computeTotals($slug, $data);
-        $html = $this->renderHtml($type, $data);
+        $lang = $request->input('lang', 'en');
+        $html = $this->renderHtml($type, $data, $lang);
 
         $reference = $data[$slug . '_number']
             ?? $data['invoice_number']
@@ -224,7 +236,8 @@ class DocumentController extends Controller
         $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
 
         $data = $this->computeTotals($slug, $data);
-        $html = $this->renderHtml($type, $data);
+        $lang = $request->input('lang', 'en');
+        $html = $this->renderHtml($type, $data, $lang);
 
         return response($html);
     }
@@ -346,10 +359,27 @@ class DocumentController extends Controller
         return $data;
     }
 
-    public function renderHtml(DocumentType $type, array $data): string
+    public function renderHtml(DocumentType $type, array $data, string $lang = 'en'): string
     {
         $html = file_get_contents($type->template_path);
         $css  = file_get_contents(dirname($type->template_path) . '/style.css');
+
+        // Inject i18n strings into $data before template rendering
+        $slug     = $type->slug;
+        $manifest = json_decode(file_get_contents(
+            storage_path('app/templates/' . $slug . '/manifest.json')
+        ), true);
+        if (isset($manifest['i18n'])) {
+            $i18nPath = storage_path('app/templates/' . $slug . '/' . $manifest['i18n']);
+            if (file_exists($i18nPath)) {
+                $i18nAll = json_decode(file_get_contents($i18nPath), true) ?? [];
+                // Fall back to 'en' if requested lang not found
+                $strings = $i18nAll[$lang] ?? $i18nAll['en'] ?? [];
+                foreach ($strings as $key => $value) {
+                    $data['i18n_' . $key] = $value;
+                }
+            }
+        }
 
         $html = str_replace('{{style}}', $css, $html);
 

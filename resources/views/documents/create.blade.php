@@ -10,7 +10,27 @@
             <i class="bi bi-arrow-left"></i>
         </a>
         <h4 class="fw-semibold mb-0">New {{ $type->name }}</h4>
+
+        @if(!empty($languages))
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <i class="bi bi-translate text-muted"></i>
+            <select id="lang-switcher" class="form-select form-select-sm" style="width:auto;">
+                @foreach($languages as $lang)
+                <option value="{{ $lang }}">
+                    {{ $lang === 'en' ? '🇬🇧 English' : ($lang === 'fr' ? '🇫🇷 Français' : strtoupper($lang)) }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+        @endif
     </div>
+
+    @if(!empty($languages))
+    {{-- i18n strings for JS label switching --}}
+    <script>
+    const _i18n = @json($i18n);
+    </script>
+    @endif
 
     @if(session('info'))
         <div class="alert alert-info alert-dismissible fade show">
@@ -87,6 +107,7 @@
 
     <form method="POST" action="{{ route('documents.store', $type->slug) }}">
         @csrf
+        <input type="hidden" name="lang" id="form-lang" value="{{ $languages[0] ?? 'en' }}">
 
         {{-- ================================================================ --}}
         {{-- SHARED ENTITY PICKERS (auto-generated from manifest entities)    --}}
@@ -217,14 +238,16 @@
         {{-- ================================================================ --}}
         @foreach($form as $section)
         <div class="card border-0 shadow-sm mb-3">
-            <div class="card-header bg-white fw-semibold">
+            <div class="card-header bg-white fw-semibold"
+                 @if(!empty($section['i18n_section'])) data-i18n="{{ $section['i18n_section'] }}" @endif>
                 {{ $section['section'] }}
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     @foreach($section['fields'] as $field)
                     <div class="col-md-6">
-                        <label class="form-label fw-medium">
+                        <label class="form-label fw-medium"
+                               @if(!empty($field['i18n_label'])) data-i18n="{{ $field['i18n_label'] }}" @endif>
                             {{ $field['label'] ?? ucfirst(str_replace('_', ' ', $field['name'])) }}
                             @if(!empty($field['required']))<span class="text-danger">*</span>@endif
                         </label>
@@ -466,5 +489,37 @@ function showImportSuccess(msg) {
     el.classList.remove('d-none');
     document.getElementById('import-error').classList.add('d-none');
 }
+
+// ── Language switcher ──────────────────────────────────────────────────────
+(function () {
+    const switcher = document.getElementById('lang-switcher');
+    if (!switcher || typeof _i18n === 'undefined') return;
+
+    function applyLang(lang) {
+        const strings = _i18n[lang] || _i18n['en'] || {};
+
+        // Update hidden form field so the selected language is submitted
+        const hidden = document.getElementById('form-lang');
+        if (hidden) hidden.value = lang;
+
+        // Update section headers and field labels that have data-i18n attributes
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (strings[key] !== undefined) {
+                // Preserve the red asterisk for required fields (it's a child span)
+                const asterisk = el.querySelector('span.text-danger');
+                el.textContent = strings[key];
+                if (asterisk) el.appendChild(asterisk);
+            }
+        });
+    }
+
+    switcher.addEventListener('change', function () {
+        applyLang(this.value);
+    });
+
+    // Apply on load to set initial state consistently
+    applyLang(switcher.value);
+})();
 </script>
 @endsection
