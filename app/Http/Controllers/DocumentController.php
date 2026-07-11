@@ -8,11 +8,15 @@ use App\Models\DocumentType;
 use App\Models\Product;
 use App\Models\CompanyAsset;
 use App\Services\EntityResolver;
+use App\Services\DocumentNumberService;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
 {
-    public function __construct(protected EntityResolver $entityResolver) {}
+    public function __construct(
+        protected EntityResolver $entityResolver,
+        protected DocumentNumberService $documentNumbers,
+    ) {}
 
     // -------------------------------------------------------------------------
     // DOCUMENT TYPE LANDING PAGE
@@ -180,6 +184,14 @@ class DocumentController extends Controller
         }
 
         $linkedIds = $this->entityResolver->saveFromRequest($entities, $data, $selectedIds);
+
+        // Auto-generate document number if the manifest declares a prefix
+        // and no number has already been set (e.g. from a quote→invoice conversion).
+        $prefix     = $manifest['prefix'] ?? null;
+        $numberKey  = $this->resolveNumberKey($slug, $manifest);
+        if ($prefix && empty($data[$numberKey])) {
+            $data[$numberKey] = $this->documentNumbers->generate($prefix);
+        }
 
         $data = $this->computeTotals($slug, $data);
         $lang = $request->input('lang', 'en');
@@ -357,6 +369,33 @@ class DocumentController extends Controller
         }
 
         return $data;
+    }
+
+    /**
+     * Determine which $data key holds the document number for a given slug.
+     * Falls back to scanning form.json for the first field marked "auto": true.
+     * Hardcoded fallbacks ensure legacy slugs always resolve correctly.
+     */
+    private function resolveNumberKey(string $slug, array $manifest): string
+    {
+        // Try to find the auto field in form.json
+        $formPath = storage_path('app/templates/' . $slug . '/' . ($manifest['form'] ?? 'form.json'));
+        if (file_exists($formPath)) {
+            $sections = json_decode(file_get_contents($formPath), true) ?? [];
+            foreach ($sections as $section) {
+                foreach ($section['fields'] ?? [] as $field) {
+                    if (! empty($field['auto'])) {
+                        return $field['name'];
+                    }
+                }
+            }
+        }
+
+        // Hardcoded fallbacks
+        return match (true) {
+            str_contains($slug, 'invoice'), str_contains($slug, 'facture') => 'invoice_number',
+            default => 'quote_number',
+        };
     }
 
     public function renderHtml(DocumentType $type, array $data, string $lang = 'en'): string

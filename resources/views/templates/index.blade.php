@@ -55,7 +55,7 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show py-2">
+        <div class="alert alert-success alert-dismissible fade show">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
