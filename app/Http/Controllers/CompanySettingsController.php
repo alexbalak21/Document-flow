@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanyAsset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 
 class CompanySettingsController extends Controller
 {
@@ -70,8 +69,6 @@ class CompanySettingsController extends Controller
             storage_path('app/company_extra.json'),
             json_encode($longFields, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
-
-        Artisan::call('config:clear');
 
         return redirect()->route('settings.company')
             ->with('success', 'Company settings saved.');
