@@ -1,95 +1,85 @@
-# Proposal / Proposition — Template Packages
+# Update — Bank Details, New Templates, Delivery & Footer
 
-## Two packages
-
-| File | Slug | Language | Prefix | Sidebar |
-|---|---|---|---|---|
-| `proposal.zip` | `proposal` | EN + FR (i18n switcher) | `PROP-` | Sales |
-| `proposition.zip` | `proposition` | FR only (standalone) | `PROP-FR-` | Ventes (hidden) |
-
----
-
-## Install
-
-Go to `/templates` → **Upload Template Package** → upload each ZIP.
-Then click **Scan & Install**.
+## Tasks
+1. Bank config with two accounts (FR/International)
+2. Updated invoice: bank details block, "Thank you" footer, delivery line, payment terms
+3. Updated quote: delivery line
+4. Three new template packages: Delivery Note, TSCA Statement, USDA Statement
 
 ---
 
-## One controller change required
+## What Changed
 
-`DocumentController::computeTotals()` currently only runs totals for
-`invoice` and `quote` slugs. Add `proposal` and `proposition`:
+### New Files
 
-```php
-// app/Http/Controllers/DocumentController.php
+| File | Description |
+|---|---|
+| `config/bank.php` | Two bank accounts: `fr` (EUR) and `int` (international wire). Injected as `{{bank_*}}` placeholders in all templates |
+| `storage/app/templates/delivery-note/` | Full Delivery Note package |
+| `storage/app/templates/tsca-statement/` | TSCA Statement package for US shipments |
+| `storage/app/templates/usda-statement/` | USDA Statement package for biological material |
 
-private function computeTotals(string $slug, array $data): array
-{
-    if (in_array($slug, ['invoice', 'quote', 'proposal', 'proposition'])) {
-        // ... existing logic unchanged
-    }
-    return $data;
-}
+### Modified Files
+
+| File | What Changed |
+|---|---|
+| `app/Http/Controllers/DocumentController.php` | `renderHtml()` injects `bank_*` placeholders from `config/bank.php`. `computeTotals()` extended to include `delivery-note` slug |
+| `storage/app/templates/invoice/template.html` | Bank details block, payment terms block, HS code mention, "Thank you for your business!" footer, delivery row |
+| `storage/app/templates/invoice/form.json` | Added: `payment_terms`, `bank_account` (select: int/fr), `delivery_method`, `delivery_fee`, `hs_code`, `tracking_number` |
+| `storage/app/templates/invoice/style.css` | Added: `.bank-block`, `.footer-thankyou`, `.delivery-row`, `.hs-mention`, `.payment-terms-block` |
+| `storage/app/templates/invoice/manifest.json` | Bumped to v1.4 |
+| `storage/app/templates/quote/template.html` | Added optional delivery row |
+| `storage/app/templates/quote/form.json` | Added Delivery section: `delivery_method`, `delivery_fee`, `hs_code` |
+| `storage/app/templates/quote/style.css` | Added `.delivery-row` style |
+| `storage/app/templates/quote/manifest.json` | Bumped to v1.3 |
+
+---
+
+## Commands to Run
+
+```bash
+php artisan config:clear
+php artisan view:clear
 ```
 
-Without this change the subtotal / VAT / total fields will be empty on
-the rendered document.
+Then go to `/templates` → **Rescan & Update All** to pick up updated invoice/quote templates.
+
+Then upload the three new template ZIPs (or just click **Scan & Install** since the folders are already on disk).
 
 ---
 
-## Document flow position
+## Bank Placeholders Available in Templates
 
 ```
-Proposal  →  Quote  →  Invoice
+{{bank_label}}
+{{bank_beneficiary}}
+{{bank_name}}
+{{bank_bic}}
+{{bank_iban}}
+{{bank_code}}
+{{bank_branch_code}}
+{{bank_account_number}}
+{{bank_rib_key}}
 ```
 
-The Proposal is the earliest stage — a lightweight commercial document
-sent to gauge interest before committing to a formal quote. It carries
-no legal acceptance block and no payment terms footer.
+The `bank_account` field on the invoice form lets the user choose `int` or `fr` per document.
 
 ---
 
-## Design choices
+## New Template: Delivery Note
 
-| | Proposal | Quote | Invoice |
-|---|---|---|---|
-| Accent colour | Indigo `#4f46e5` | Teal `#0d9488` | Blue `#1a56db` |
-| Acceptance block | ✗ | ✓ | — |
-| Payment footer | ✗ | ✓ | ✓ |
-| Next Steps block | ✓ | ✗ | ✗ |
-| Auto-numbering | `PROP-` | `Q-` | `INV-` |
+- Slug: `delivery-note` — Sidebar group: **Shipping**
+- Fields: delivery number, date, invoice ref, purchase order, customer ID, delivery method, tracking, HS code, ATTN
+- Shows: company header, ship-to block, items table (no prices), HS code mention
 
----
+## New Template: TSCA Statement
 
-## Fields
+- Slug: `tsca-statement` — Sidebar group: **Compliance**
+- Fields: date, signatory name/title/email, invoice reference
+- Shows: checkbox block (ARE NOT SUBJECT to TSCA pre-checked), signature lines
 
-| Field | Key | Auto |
-|---|---|---|
-| Proposal Number | `proposal_number` | ✓ generated on save |
-| Proposal Date | `proposal_date` | — |
-| Valid Until | `valid_until` | — |
-| Estimated Start | `estimated_start` | optional |
-| Estimated Duration | `estimated_duration` | optional |
-| VAT Rate | `vat_rate` | — |
-| Notes | `notes` | optional |
+## New Template: USDA Statement
 
-Customer and product fields come from the `entities` resolver
-(`customer`, `product`) — same as quote and invoice.
-
----
-
-## i18n strings (proposal only)
-
-The bilingual `proposal` package switches between EN and FR via the
-language switcher on the create form. Key strings:
-
-| Key | EN | FR |
-|---|---|---|
-| `doc_title` | PROPOSAL | PROPOSITION |
-| `bill_to_label` | Proposal For | Proposition pour |
-| `next_steps_label` | Next Steps | Prochaines étapes |
-| `next_steps_text` | *To proceed, please approve…* | *Pour donner suite…* |
-
-The `proposition` standalone template has all French strings hardcoded
-in the HTML — no i18n file needed.
+- Slug: `usda-statement` — Sidebar group: **Compliance**
+- Fields: date, city, USDA guideline number, signatory name/title/phone, product details
+- Shows: declaration list, location/date, signatory block

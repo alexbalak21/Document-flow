@@ -17,10 +17,10 @@
         <div class="card-body p-4">
 
             @if ($errors->any())
-                <x-ui.alert type="danger" :dismissible="false" :small="true">
-                    <i class="bi bi-exclamation-circle me-1"></i>
-                    {{ $errors->first() }}
-                </div>
+            <x-ui.alert type="danger" :dismissible="false" :small="true">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                {{ $errors->first() }}
+            </x-ui.alert>
             @endif
 
             <form method="POST" action="{{ route('login') }}">

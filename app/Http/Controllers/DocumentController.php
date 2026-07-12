@@ -354,7 +354,7 @@ class DocumentController extends Controller
 
     private function computeTotals(string $slug, array $data): array
     {
-        if (in_array($slug, ['invoice', 'quote'])) {
+        if (in_array($slug, ['invoice', 'quote', 'proposal', 'proposition', 'delivery-note'])) {
             $qty       = (float) ($data['product_quantity']   ?? $data['quantity'] ?? 0);
             $unitPrice = (float) ($data['product_unit_price'] ?? $data['unit_price'] ?? 0);
             $vatRate   = (float) ($data['vat_rate']           ?? 0);
@@ -451,6 +451,22 @@ class DocumentController extends Controller
         $data['company_terms_text']            = $extra['terms_text']              ?? ($company['terms_text']              ?? '');
         $data['company_late_payment_text']     = $extra['late_payment_text']       ?? ($company['late_payment_text']       ?? '');
         $data['company_late_payment_fee_text'] = $extra['late_payment_fee_text']   ?? ($company['late_payment_fee_text']   ?? '');
+
+        // Inject bank details from config/bank.php
+        $bankKey     = $data['bank_account'] ?? config('bank.default', 'int');
+        $bankAccount = config('bank.accounts.' . $bankKey) ?? config('bank.accounts.' . config('bank.default'));
+        if ($bankAccount) {
+            $data['bank_label']          = $bankAccount['label']          ?? '';
+            $data['bank_beneficiary']    = $bankAccount['beneficiary']    ?? '';
+            $data['bank_name']           = $bankAccount['bank_name']      ?? '';
+            $data['bank_address']        = $bankAccount['bank_address']   ?? '';
+            $data['bank_iban']           = $bankAccount['iban']           ?? '';
+            $data['bank_bic']            = $bankAccount['bic']            ?? '';
+            $data['bank_code']           = $bankAccount['bank_code']      ?? '';
+            $data['bank_branch_code']    = $bankAccount['branch_code']    ?? '';
+            $data['bank_account_number'] = $bankAccount['account_number'] ?? '';
+            $data['bank_rib_key']        = $bankAccount['rib_key']        ?? '';
+        }
 
         $html = preg_replace_callback(
             '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
