@@ -1,10 +1,23 @@
-# Update — Bank Details, New Templates, Delivery & Footer
+# Update — PDF Generation with Browsershot + Puppeteer
 
-## Tasks
-1. Bank config with two accounts (FR/International)
-2. Updated invoice: bank details block, "Thank you" footer, delivery line, payment terms
-3. Updated quote: delivery line
-4. Three new template packages: Delivery Note, TSCA Statement, USDA Statement
+## Task
+Replace "Print to PDF" browser workaround with server-side PDF generation using Browsershot (headless Chromium). Full CSS fidelity — renders exactly as the browser does.
+
+---
+
+## Installation (run these first)
+
+```bash
+# 1. Install Puppeteer (headless Chromium)
+npm install puppeteer
+
+# 2. Install Laravel Browsershot package
+composer require spatie/browsershot
+
+# 3. Linux/VPS only — Chromium system dependencies
+# (skip on Windows/Mac — Puppeteer bundles Chromium automatically)
+# sudo apt-get install -y chromium-browser libnss3 libatk1.0-0 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2
+```
 
 ---
 
@@ -14,72 +27,59 @@
 
 | File | Description |
 |---|---|
-| `config/bank.php` | Two bank accounts: `fr` (EUR) and `int` (international wire). Injected as `{{bank_*}}` placeholders in all templates |
-| `storage/app/templates/delivery-note/` | Full Delivery Note package |
-| `storage/app/templates/tsca-statement/` | TSCA Statement package for US shipments |
-| `storage/app/templates/usda-statement/` | USDA Statement package for biological material |
+| `app/Http/Controllers/PdfController.php` | `download()` streams PDF as file attachment. `preview()` opens PDF inline in browser tab. Both use `html_snapshot` — no re-render needed |
 
 ### Modified Files
 
 | File | What Changed |
 |---|---|
-| `app/Http/Controllers/DocumentController.php` | `renderHtml()` injects `bank_*` placeholders from `config/bank.php`. `computeTotals()` extended to include `delivery-note` slug |
-| `storage/app/templates/invoice/template.html` | Bank details block, payment terms block, HS code mention, "Thank you for your business!" footer, delivery row |
-| `storage/app/templates/invoice/form.json` | Added: `payment_terms`, `bank_account` (select: int/fr), `delivery_method`, `delivery_fee`, `hs_code`, `tracking_number` |
-| `storage/app/templates/invoice/style.css` | Added: `.bank-block`, `.footer-thankyou`, `.delivery-row`, `.hs-mention`, `.payment-terms-block` |
-| `storage/app/templates/invoice/manifest.json` | Bumped to v1.4 |
-| `storage/app/templates/quote/template.html` | Added optional delivery row |
-| `storage/app/templates/quote/form.json` | Added Delivery section: `delivery_method`, `delivery_fee`, `hs_code` |
-| `storage/app/templates/quote/style.css` | Added `.delivery-row` style |
-| `storage/app/templates/quote/manifest.json` | Bumped to v1.3 |
+| `routes/web.php` | Added `GET /pdf/{document}/download` and `GET /pdf/{document}/preview` |
+| `resources/views/documents/viewer.blade.php` | Replaced single "Print / Save PDF" button with: **View PDF** (opens in tab) + **Download PDF** (file download) + small printer icon fallback |
+| `resources/views/components/document/table-row.blade.php` | Added red PDF download button next to JSON export in history table |
 
 ---
 
 ## Commands to Run
 
 ```bash
-php artisan config:clear
+# After composer install
 php artisan view:clear
 ```
 
-Then go to `/templates` → **Rescan & Update All** to pick up updated invoice/quote templates.
-
-Then upload the three new template ZIPs (or just click **Scan & Install** since the folders are already on disk).
-
 ---
 
-## Bank Placeholders Available in Templates
+## How It Works
 
 ```
-{{bank_label}}
-{{bank_beneficiary}}
-{{bank_name}}
-{{bank_bic}}
-{{bank_iban}}
-{{bank_code}}
-{{bank_branch_code}}
-{{bank_account_number}}
-{{bank_rib_key}}
+User clicks "Download PDF"
+    ↓
+PdfController::download($document)
+    ↓
+Browsershot::html($document->html_snapshot)
+    ↓
+Headless Chromium renders HTML + CSS (all styles embedded in snapshot)
+    ↓
+Chromium outputs A4 PDF with showBackground() + emulateMedia('print')
+    ↓
+Laravel streams PDF as file download
 ```
 
-The `bank_account` field on the invoice form lets the user choose `int` or `fr` per document.
+## Browsershot Options Used
 
----
+| Option | Why |
+|---|---|
+| `format('A4')` | A4 page size |
+| `margins(0,0,0,0)` | Templates manage their own padding |
+| `showBackground()` | Renders CSS backgrounds, borders, colors |
+| `emulateMedia('print')` | Uses `@media print` CSS rules |
+| `waitUntilNetworkIdle()` | Waits for embedded images/fonts |
+| `noSandbox()` | Required on Linux servers |
+| `timeout(60)` | 60 second timeout for large documents |
 
-## New Template: Delivery Note
+## Troubleshooting
 
-- Slug: `delivery-note` — Sidebar group: **Shipping**
-- Fields: delivery number, date, invoice ref, purchase order, customer ID, delivery method, tracking, HS code, ATTN
-- Shows: company header, ship-to block, items table (no prices), HS code mention
+**"Could not find Chrome"** → Run `npm install puppeteer` from the project root.
 
-## New Template: TSCA Statement
+**Blank PDF / missing styles** → The `html_snapshot` is self-contained (CSS embedded). If blank, regenerate the document snapshot via `/templates` → Regenerate.
 
-- Slug: `tsca-statement` — Sidebar group: **Compliance**
-- Fields: date, signatory name/title/email, invoice reference
-- Shows: checkbox block (ARE NOT SUBJECT to TSCA pre-checked), signature lines
-
-## New Template: USDA Statement
-
-- Slug: `usda-statement` — Sidebar group: **Compliance**
-- Fields: date, city, USDA guideline number, signatory name/title/phone, product details
-- Shows: declaration list, location/date, signatory block
+**Linux: sandbox error** → `noSandbox()` is already set in `PdfController`. If still failing, add to `.env`: `BROWSERSHOT_CHROME_PATH=/usr/bin/chromium-browser`

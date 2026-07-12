@@ -24,7 +24,12 @@
 
             <a href="{{ route('export.document', $doc) }}"
                class="btn btn-sm btn-outline-info" title="Export JSON">
-                <i class="bi bi-download"></i>
+                <i class="bi bi-filetype-json"></i>
+            </a>
+
+            <a href="{{ route('pdf.download', $doc) }}"
+               class="btn btn-sm btn-outline-danger" title="Download PDF">
+                <i class="bi bi-filetype-pdf"></i>
             </a>
 
             @if($doc->canBeEdited())

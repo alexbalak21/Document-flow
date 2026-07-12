@@ -162,7 +162,21 @@
         <a href="{{ route('export.document', $document) }}" class="df-btn">
             ↓ Export JSON
         </a>
-        <button onclick="printDoc()" class="df-btn df-btn-print">⎙ Print / Save PDF</button>
+
+        {{-- PDF Preview (opens in browser tab) --}}
+        <a href="{{ route('pdf.preview', $document) }}" target="_blank" class="df-btn">
+            ⎙ View PDF
+        </a>
+
+        {{-- PDF Download --}}
+        <a href="{{ route('pdf.download', $document) }}" class="df-btn df-btn-print">
+            ↓ Download PDF
+        </a>
+
+        {{-- Browser print fallback --}}
+        <button onclick="printDoc()" class="df-btn" title="Print via browser">
+            &#128438;
+        </button>
     </div>
 
     <div class="df-page-shell">

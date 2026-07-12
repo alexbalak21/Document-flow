@@ -8,6 +8,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CompanySettingsController;
 use App\Http\Controllers\ImportExportController;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\ProductController;
 
 // Auth
@@ -41,6 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/history',            [DocumentController::class, 'history'])->name('documents.history');
     Route::get('/history/{document}',     [DocumentController::class, 'show'])->name('documents.show');
     Route::get('/history/{document}/raw', [DocumentController::class, 'raw'])->name('documents.raw');
+    Route::get('/pdf/{document}/download', [PdfController::class, 'download'])->name('pdf.download');
+    Route::get('/pdf/{document}/preview',  [PdfController::class, 'preview'])->name('pdf.preview');
     Route::get('/documents/{document}/edit',   [DocumentController::class, 'edit'])->name('documents.edit');
     Route::put('/documents/{document}/update', [DocumentController::class, 'update'])->name('documents.update');
     // Status & Convert
