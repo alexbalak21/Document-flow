@@ -19,6 +19,7 @@ class DocumentType extends Model
         'icon',
         'sidebar_label',
         'sidebar_group',
+        'accent_color',
     ];
 
     protected $casts = [
@@ -54,13 +55,6 @@ class DocumentType extends Model
         return $this->template_dir . '/' . $file;
     }
 
-    private function readManifest(): array
-    {
-        $path = $this->template_dir . '/manifest.json';
-        if (! file_exists($path)) return [];
-        return json_decode(file_get_contents($path), true) ?? [];
-    }
-
     /**
      * Whether this type should be hidden from the sidebar.
      * Controlled by "sidebar_hidden": true in manifest.json.
@@ -86,5 +80,15 @@ class DocumentType extends Model
     public function getIconDisplayAttribute(): string
     {
         return $this->icon ?: 'bi-file-earmark-text';
+    }
+
+    /**
+     * Read the manifest.json for this template.
+     */
+    private function readManifest(): array
+    {
+        $path = $this->template_dir . '/manifest.json';
+        if (! file_exists($path)) return [];
+        return json_decode(file_get_contents($path), true) ?? [];
     }
 }

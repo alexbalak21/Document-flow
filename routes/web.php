@@ -29,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/{template}/regenerate', [TemplateController::class, 'regenerate'])->name('templates.regenerate');
     Route::get('/templates/{template}/preview',     [TemplateController::class, 'preview'])->name('templates.preview');
     Route::post('/templates/{template}/toggle',     [TemplateController::class, 'toggle'])->name('templates.toggle');
+    Route::patch('/templates/{template}/color',      [TemplateController::class, 'updateColor'])->name('templates.color');
     Route::delete('/templates/{template}',          [TemplateController::class, 'destroy'])->name('templates.destroy');
 
     // Document type landing page

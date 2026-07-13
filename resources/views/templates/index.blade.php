@@ -105,6 +105,25 @@
                         </div>
                         <p class="small text-muted mb-3">{{ $template->description ?? '—' }}</p>
 
+                        {{-- Accent color picker --}}
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <label class="form-label fw-medium small mb-0" style="white-space:nowrap;">
+                                Accent color
+                            </label>
+                            <input type="color"
+                                   class="form-control form-control-color"
+                                   style="width:40px; height:32px; padding:2px; cursor:pointer;"
+                                   value="{{ $template->accent_color ?? '#1a56db' }}"
+                                   data-template-id="{{ $template->id }}"
+                                   onchange="updateAccentColor(this)"
+                                   title="Change accent color">
+                            <span class="font-monospace small text-muted"
+                                  id="color-label-{{ $template->id }}">
+                                {{ $template->accent_color ?? '#1a56db' }}
+                            </span>
+                            <span class="small d-none" id="color-status-{{ $template->id }}"></span>
+                        </div>
+
                         <div class="d-flex gap-2 flex-wrap">
 
                             {{-- Document count --}}
@@ -198,4 +217,52 @@
     </div>
 
 </div>
+
+<script>
+async function updateAccentColor(input) {
+    const id      = input.dataset.templateId;
+    const color   = input.value;
+    const label   = document.getElementById('color-label-' + id);
+    const status  = document.getElementById('color-status-' + id);
+
+    if (label) label.textContent = color;
+
+    if (status) {
+        status.textContent = 'Saving...';
+        status.className   = 'small text-muted';
+        status.classList.remove('d-none');
+    }
+
+    try {
+        const res = await fetch(`/templates/${id}/color`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept':       'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content
+                    ?? '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({ accent_color: color }),
+        });
+
+        const json = await res.json();
+
+        if (status) {
+            if (json.success) {
+                status.textContent = json.message;
+                status.className   = 'small text-success';
+            } else {
+                status.textContent = 'Error saving color.';
+                status.className   = 'small text-danger';
+            }
+            setTimeout(() => status.classList.add('d-none'), 3000);
+        }
+    } catch (e) {
+        if (status) {
+            status.textContent = 'Error: ' + e.message;
+            status.className   = 'small text-danger';
+        }
+    }
+}
+</script>
 @endsection

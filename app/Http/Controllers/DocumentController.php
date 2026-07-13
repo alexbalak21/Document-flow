@@ -420,7 +420,13 @@ class DocumentController extends Controller
             }
         }
 
-        $html = str_replace('{{style}}', $css, $html);
+        // Inject accent color as CSS variable override
+        $accentColor      = $type->accent_color       ?? '#1a56db';
+        $accentColorLight = $type->readManifest()['accent_color_light'] ?? '#f8faff';
+        $colorOverride    = ":root{--accent:{$accentColor};--accent-light:{$accentColorLight};}\n";
+        $cssWithColors    = $colorOverride . $css;
+
+        $html = str_replace('{{style}}', $cssWithColors, $html);
 
         $company = config('company');
         $data['company_name']                  = $company['name']                    ?? '';

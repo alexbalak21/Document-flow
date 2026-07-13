@@ -25,7 +25,7 @@ class TemplateController extends Controller
 
     public function upload(Request $request)
     {
-        $request->validate([
+        $request->validate([    
             'package' => ['required', 'file', 'mimes:zip', 'max:10240'],
         ]);
 
@@ -266,6 +266,43 @@ class TemplateController extends Controller
     // -------------------------------------------------------------------------
     // SHARED SCAN LOGIC
     // -------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------
+    // UPDATE ACCENT COLOR
+    // -------------------------------------------------------------------------
+
+    public function updateColor(Request $request, DocumentType $template)
+    {
+        $request->validate([
+            'accent_color' => ['required', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        $template->update(['accent_color' => $request->accent_color]);
+
+        // Regenerate all snapshots with new color
+        $count      = 0;
+        $controller = app(DocumentController::class);
+        $method     = new \ReflectionMethod($controller, 'renderHtml');
+        $method->setAccessible(true);
+
+        Document::where('document_type_id', $template->id)
+            ->whereNotNull('json_data')
+            ->get()
+            ->each(function ($doc) use ($template, $controller, $method, &$count) {
+                try {
+                    $lang = $doc->json_data['lang'] ?? 'en';
+                    $html = $method->invoke($controller, $template, $doc->json_data);
+                    $doc->update(['html_snapshot' => $html]);
+                    $count++;
+                } catch (\Throwable $e) {}
+            });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Color updated. ' . $count . ' document(s) regenerated.',
+            'color'   => $request->accent_color,
+        ]);
+    }
 
     private function scanTemplates(
         bool $installNew,
