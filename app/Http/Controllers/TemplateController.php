@@ -188,6 +188,82 @@ class TemplateController extends Controller
     }
 
     // -------------------------------------------------------------------------
+    // PREVIEW TEMPLATE (with placeholders highlighted)
+    // -------------------------------------------------------------------------
+
+    public function preview(DocumentType $template)
+    {
+        $templateFile = $template->template_path;
+        $styleFile    = dirname($templateFile) . '/style.css';
+
+        if (! file_exists($templateFile)) {
+            abort(404, 'Template file not found: ' . $templateFile);
+        }
+
+        $html = file_get_contents($templateFile);
+        $css  = file_exists($styleFile) ? file_get_contents($styleFile) : '';
+
+        // Inject CSS
+        $html = str_replace('{{style}}', $css, $html);
+
+        // Highlight all remaining {{placeholders}} with a coloured span
+        $html = preg_replace(
+            '/\{\{([^}]+)\}\}/',
+            '<span class="__placeholder__">{{$1}}</span>',
+            $html
+        );
+
+        // Inject placeholder highlight style into <head>
+        $placeholderCss = '
+        <style>
+        .__placeholder__ {
+            display: inline-block;
+            background: #fef9c3;
+            border: 1px dashed #ca8a04;
+            border-radius: 3px;
+            padding: 0 4px;
+            font-family: monospace;
+            font-size: 11px;
+            color: #92400e;
+            white-space: nowrap;
+        }
+        </style>';
+
+        $html = str_replace('</head>', $placeholderCss . '</head>', $html);
+
+        // Add a top banner indicating this is a preview
+        $banner = '
+        <div style="
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+            background: #1e2533; color: #fff;
+            padding: 8px 20px;
+            font-family: sans-serif; font-size: 13px;
+            display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.3);
+        ">
+            <span style="font-weight:600;">Template Preview</span>
+            <span style="color:#93c5fd;">' . htmlspecialchars($template->name) . ' v' . $template->version . '</span>
+            <span style="margin-left:auto; font-size:11px; color:#9ca3af;">
+                Placeholders are highlighted in yellow — they will be replaced with real data on document generation.
+            </span>
+            <a href="javascript:history.back()" style="
+                color: rgba(255,255,255,.8);
+                background: rgba(255,255,255,.1);
+                border: 1px solid rgba(255,255,255,.2);
+                border-radius: 5px;
+                padding: 4px 12px;
+                text-decoration: none;
+                font-size: 12px;
+            ">← Back</a>
+        </div>
+        <div style="height:48px;"></div>';
+
+        $html = str_replace('<body>', '<body>' . $banner, $html);
+
+        return response($html)->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    // -------------------------------------------------------------------------
     // SHARED SCAN LOGIC
     // -------------------------------------------------------------------------
 

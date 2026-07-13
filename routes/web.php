@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/templates/install',  [TemplateController::class, 'install'])->name('templates.install');
     Route::post('/templates/rescan',   [TemplateController::class, 'rescan'])->name('templates.rescan');
     Route::post('/templates/{template}/regenerate', [TemplateController::class, 'regenerate'])->name('templates.regenerate');
+    Route::get('/templates/{template}/preview',     [TemplateController::class, 'preview'])->name('templates.preview');
     Route::post('/templates/{template}/toggle',     [TemplateController::class, 'toggle'])->name('templates.toggle');
     Route::delete('/templates/{template}',          [TemplateController::class, 'destroy'])->name('templates.destroy');
 

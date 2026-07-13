@@ -108,6 +108,14 @@
                         <div class="d-flex gap-2 flex-wrap">
 
                             {{-- Document count --}}
+                            {{-- Preview template with placeholders --}}
+                            <a href="{{ route('templates.preview', $template) }}"
+                               target="_blank"
+                               class="btn btn-sm btn-outline-info"
+                               title="Preview template with placeholders">
+                                <i class="bi bi-eye me-1"></i>Preview
+                            </a>
+
                             <a href="{{ route('documents.page', $template->slug) }}"
                                class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-file-earmark me-1"></i>

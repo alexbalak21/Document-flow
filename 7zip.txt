@@ -1,3 +1,3 @@
-7z a document-flow.zip app\Http app\Models app\Services app\Providers database\migrations resources\views resources\css resources\js routes config\app.php vite.config.js package.json storage\app\templates work_done.md .env
+7z a document-flow.zip app\Http app\Models app\Services app\Providers database\migrations resources\views resources\css resources\js routes config vite.config.js package.json storage\app\templates work_done.md .env
 
 7z a document-flow.zip storage\app\templates resources\views
