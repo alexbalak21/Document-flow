@@ -1,0 +1,21 @@
+{
+    "name": "Delivery Note",
+    "slug": "delivery-note",
+    "version": "1.0",
+    "author": "Document Flow",
+    "description": "Packing slip / delivery note for shipments",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "entities": [
+        "customer",
+        "product"
+    ],
+    "icon": "bi-truck",
+    "sidebar_label": "Delivery Note",
+    "sidebar_group": "Shipping",
+    "accent_color": "#1a56db",
+    "accent_color_light": "#f8f9fa",
+    "sidebar_group_order": 2,
+    "sidebar_order": 1
+}

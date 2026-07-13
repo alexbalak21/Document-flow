@@ -347,6 +347,8 @@ class TemplateController extends Controller
                 'icon'          => $manifest['icon']          ?? 'bi-file-earmark-text',
                 'sidebar_label' => $manifest['sidebar_label'] ?? null,
                 'sidebar_group' => $manifest['sidebar_group'] ?? null,
+                'sidebar_group_order' => $manifest['sidebar_group_order'] ?? null,
+                'sidebar_order'       => $manifest['sidebar_order'] ?? null,
             ];
 
             if (! $existing) {

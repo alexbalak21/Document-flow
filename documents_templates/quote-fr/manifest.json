@@ -7,10 +7,15 @@
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",
-    "entities": ["customer", "product"],
+    "entities": [
+        "customer",
+        "product"
+    ],
     "icon": "bi-file-earmark-text",
     "sidebar_label": "Devis (FR)",
     "sidebar_group": "Ventes",
     "sidebar_hidden": true,
-    "prefix": "DEV-"
+    "prefix": "DEV-",
+    "accent_color": "#0d9488",
+    "accent_color_light": "#f0fdfa"
 }

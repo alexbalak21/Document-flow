@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>USDA Statement</title>
+    <style>{{style}}</style>
+</head>
+<body>
+<div class="page">
+
+    <!-- Company header -->
+    <div class="company-header">
+        {{#company_logo}}
+        <img src="{{company_logo}}" alt="{{company_name}}" class="brand-logo">
+        {{/company_logo}}
+        <div class="company-block">
+            <div class="company-name">{{company_name}}</div>
+            <div>{{company_street}}</div>
+            <div>{{company_zip}} {{company_city}} — {{company_country}}</div>
+            <div>Contact: {{company_email}}</div>
+            <div>EORI# {{company_eori}}</div>
+            <div>VAT# {{company_vat_number}}</div>
+        </div>
+    </div>
+
+    <div class="to-whom">To whom it may concern</div>
+
+    <h1 class="doc-title">USDA statement</h1>
+
+    {{#usda_guideline}}
+    <p class="guideline">Material falls under USDA guideline {{usda_guideline}}:</p>
+    {{/usda_guideline}}
+
+    <p class="intro">
+        I, {{signatory_name}}, {{signatory_title}} of {{company_name}}, declare that
+        <strong class="product-highlight">{{product_name}}</strong>
+        {{#product_details}}({{product_details}}){{/product_details}} were:
+    </p>
+
+    <ul class="declarations">
+        <li>fully produced, purified, controlled and packed in {{company_name}}'s facilities, {{company_street}} {{company_zip}} {{company_city}}, in {{company_country}};</li>
+        <li>do not originate from facilities where work with exotic disease agents affecting livestock or avian species is conducted;</li>
+        <li>will be used only in vitro, and only for Research use;</li>
+        <li>the test kits cannot diagnose infectious diseases of animals;</li>
+        <li>The test kits are pre-packaged and ready for use.</li>
+    </ul>
+
+    <div class="location-date">
+        <strong>{{statement_city}}, {{company_country}}, {{statement_date}}</strong>
+    </div>
+
+    <div class="signatory-block">
+        <div class="signatory-name">{{signatory_name}}</div>
+        <div class="signatory-title">{{signatory_title}}</div>
+        <div class="signatory-company">{{company_name}}</div>
+        {{#signatory_phone}}<div class="signatory-phone">Tel. {{signatory_phone}}</div>{{/signatory_phone}}
+    </div>
+
+    <div class="doc-footer">
+        {{company_name}} — {{company_legal_form}} — SIRET: {{company_siret}} — VAT: {{company_vat_number}}<br>
+        {{company_email}} — {{company_website}}
+    </div>
+
+</div>
+</body>
+</html>

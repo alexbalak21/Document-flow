@@ -19,6 +19,8 @@ class DocumentType extends Model
         'icon',
         'sidebar_label',
         'sidebar_group',
+        'sidebar_group_order',
+        'sidebar_order',
         'accent_color',
     ];
 

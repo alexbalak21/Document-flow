@@ -1,0 +1,27 @@
+[
+    {
+        "section": "Delivery Note",
+        "fields": [
+            { "type": "text",     "name": "delivery_number",  "label": "Delivery Note Number", "required": true,  "auto": true },
+            { "type": "date",     "name": "delivery_date",    "label": "Date",                 "required": true },
+            { "type": "text",     "name": "invoice_reference","label": "Invoice Reference",    "required": false },
+            { "type": "text",     "name": "purchase_order",   "label": "Purchase Order",       "required": false },
+            { "type": "text",     "name": "customer_id_label","label": "Customer ID / Name",   "required": false }
+        ]
+    },
+    {
+        "section": "Shipment",
+        "fields": [
+            { "type": "text",     "name": "delivery_method",  "label": "Delivery Method",      "required": false, "placeholder": "e.g. FedEx International Priority" },
+            { "type": "text",     "name": "tracking_number",  "label": "Tracking Number",      "required": false },
+            { "type": "text",     "name": "hs_code",          "label": "HS Code",              "required": false, "placeholder": "e.g. 3822.19.000" },
+            { "type": "text",     "name": "attn",             "label": "ATTN",                 "required": false }
+        ]
+    },
+    {
+        "section": "Notes",
+        "fields": [
+            { "type": "textarea", "name": "notes",            "label": "Notes",                "required": false }
+        ]
+    }
+]

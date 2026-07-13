@@ -47,11 +47,79 @@
                 "required": false
             },
             {
+                "type": "text",
+                "name": "payment_terms",
+                "label": "Payment Terms",
+                "required": false,
+                "placeholder": "e.g. 100% Advance Payment"
+            },
+            {
+                "type": "select",
+                "name": "bank_account",
+                "label": "Bank Account",
+                "required": false,
+                "options": ["int", "fr"]
+            },
+            {
                 "type": "number",
                 "name": "vat_rate",
                 "label": "VAT Rate (%)",
                 "i18n_label": "form_vat_rate",
                 "required": true
+            }
+        ]
+    },
+    {
+        "section": "Delivery",
+        "optional": true,
+        "icon": "bi-truck",
+        "fields": [
+            {
+                "type": "text",
+                "name": "delivery_method",
+                "label": "Delivery Method",
+                "required": false,
+                "placeholder": "e.g. FedEx International Priority"
+            },
+            {
+                "type": "number",
+                "name": "delivery_fee",
+                "label": "Delivery Fee",
+                "required": false
+            },
+            {
+                "type": "text",
+                "name": "hs_code",
+                "label": "HS Code",
+                "required": false,
+                "placeholder": "e.g. 3822.19.000"
+            },
+            {
+                "type": "text",
+                "name": "tracking_number",
+                "label": "Tracking Number",
+                "required": false
+            }
+        ]
+    },
+    {
+        "section": "Foreign Currency",
+        "optional": true,
+        "icon": "bi-currency-exchange",
+        "fields": [
+            {
+                "type": "select",
+                "name": "fx_currency",
+                "label": "Currency",
+                "required": false,
+                "options": ["USD", "GBP", "INR", "JPY", "CHF", "CAD", "AUD", "CNY"]
+            },
+            {
+                "type": "number",
+                "name": "fx_rate",
+                "label": "Conversion Rate (1 EUR = ?)",
+                "required": false,
+                "placeholder": "e.g. 108.89"
             }
         ]
     },

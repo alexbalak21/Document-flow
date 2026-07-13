@@ -7,10 +7,15 @@
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",
-    "entities": ["customer", "product"],
+    "entities": [
+        "customer",
+        "product"
+    ],
     "icon": "bi-receipt",
     "sidebar_label": "Facture (FR)",
     "sidebar_group": "Ventes",
     "sidebar_hidden": true,
-    "prefix": "FACT-"
+    "prefix": "FACT-",
+    "accent_color": "#1a56db",
+    "accent_color_light": "#f8faff"
 }

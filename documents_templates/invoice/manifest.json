@@ -8,10 +8,20 @@
     "style": "style.css",
     "form": "form.json",
     "i18n": "i18n.json",
-    "languages": ["en", "fr"],
-    "entities": ["customer", "product"],
+    "languages": [
+        "en",
+        "fr"
+    ],
+    "entities": [
+        "customer",
+        "product"
+    ],
     "icon": "bi-receipt",
     "sidebar_label": "Invoice",
     "sidebar_group": "Sales",
-    "prefix": "INV-"
+    "prefix": "INV-",
+    "accent_color": "#1a56db",
+    "accent_color_light": "#f8faff",
+    "sidebar_group_order": 1,
+    "sidebar_order": 3
 }

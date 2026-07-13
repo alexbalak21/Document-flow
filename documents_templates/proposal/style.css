@@ -1,3 +1,8 @@
+:root {
+    --accent:       #4f46e5;
+    --accent-light: #eef2ff;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -21,10 +26,10 @@ body {
     align-items: flex-start;
     margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #4f46e5;
+    border-bottom: 2px solid var(--accent);
 }
 
-.company-name    { font-size: 22px; font-weight: 700; color: #4f46e5; }
+.company-name    { font-size: 22px; font-weight: 700; color: var(--accent); }
 .company-address { font-size: 11px; color: #555; margin-top: 2px; }
 .company-contact { font-size: 11px; color: #555; }
 .company-legal   { font-size: 10px; color: #888; margin-top: 4px; }
@@ -34,7 +39,7 @@ body {
 .invoice-title {
     font-size: 28px;
     font-weight: 700;
-    color: #4f46e5;
+    color: var(--accent);
     text-align: right;
     margin-bottom: 8px;
 }
@@ -42,8 +47,8 @@ body {
 /* Subtle "PROPOSAL" label strip */
 .doc-type-badge {
     display: inline-block;
-    background: #eef2ff;
-    color: #4f46e5;
+    background: var(--accent-light);
+    color: var(--accent);
     font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
@@ -70,10 +75,10 @@ body {
 
 /* ── Items table ────────────────────────────────────────── */
 .items-table              { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-.items-table thead tr     { background: #4f46e5; color: #fff; }
+.items-table thead tr     { background: var(--accent); color: #fff; }
 .items-table th           { padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 .items-table td           { padding: 10px 12px; border-bottom: 1px solid #eee; }
-.items-table tbody tr:hover { background: #eef2ff; }
+.items-table tbody tr:hover { background: var(--accent-light); }
 
 .items-table th + th,
 .items-table td + td { border-left: 1px solid rgba(0,0,0,.08); }
@@ -86,7 +91,7 @@ body {
 .totals               { display: flex; justify-content: flex-end; margin-bottom: 32px; }
 .totals table         { min-width: 240px; border-collapse: collapse; }
 .totals td            { padding: 5px 12px; font-size: 13px; }
-.total-row td         { font-size: 15px; border-top: 2px solid #4f46e5; padding-top: 8px; }
+.total-row td         { font-size: 15px; border-top: 2px solid var(--accent); padding-top: 8px; }
 
 /* ── VAT mention ─────────────────────────────────────────── */
 .vat-mention {
@@ -99,7 +104,7 @@ body {
 }
 
 /* ── Notes ───────────────────────────────────────────────── */
-.notes              { background: #eef2ff; border-left: 3px solid #4f46e5; padding: 12px 16px; margin-bottom: 24px; }
+.notes              { background: var(--accent-light); border-left: 3px solid var(--accent); padding: 12px 16px; margin-bottom: 24px; }
 .notes-label        { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
 
 /* ── Next steps block ────────────────────────────────────── */
@@ -115,7 +120,7 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #4f46e5;
+    color: var(--accent);
     margin-bottom: 6px;
 }
 .next-steps-text {

@@ -47,6 +47,30 @@
         ]
     },
     {
+        "section": "Delivery",
+        "fields": [
+            {
+                "type": "text",
+                "name": "delivery_method",
+                "label": "Delivery Method",
+                "required": false,
+                "placeholder": "e.g. FedEx International Priority"
+            },
+            {
+                "type": "number",
+                "name": "delivery_fee",
+                "label": "Delivery Fee",
+                "required": false
+            },
+            {
+                "type": "text",
+                "name": "hs_code",
+                "label": "HS Code",
+                "required": false
+            }
+        ]
+    },
+    {
         "section": "Notes",
         "i18n_section": "form_section_notes",
         "fields": [

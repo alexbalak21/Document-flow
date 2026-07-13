@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delivery Note {{delivery_number}}</title>
+    <style>{{style}}</style>
+</head>
+<body>
+<div class="page">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="company-block">
+            {{#company_logo}}
+            <img src="{{company_logo}}" alt="{{company_name}}" class="brand-logo">
+            {{/company_logo}}
+            <div class="company-name">{{company_name}}</div>
+            <div class="company-address">
+                {{company_street}}<br>
+                {{company_zip}} {{company_city}} — {{company_country}}
+            </div>
+            <div class="company-legal">
+                SIRET&nbsp;: {{company_siret}} — VAT&nbsp;: {{company_vat_number}}<br>
+                {{#company_eori}}EORI&nbsp;: {{company_eori}}{{/company_eori}}
+            </div>
+        </div>
+        <div class="doc-meta">
+            <div class="doc-title">DELIVERY NOTE</div>
+            <table class="meta-table">
+                <tr><th>NUMBER</th><th>DATE</th></tr>
+                <tr><td><strong>{{delivery_number}}</strong></td><td>{{delivery_date}}</td></tr>
+            </table>
+            <table class="meta-table mt-8">
+                {{#invoice_reference}}<tr><td>Invoice Ref.</td><td>{{invoice_reference}}</td></tr>{{/invoice_reference}}
+                {{#customer_id_label}}<tr><td>Customer ID</td><td>{{customer_id_label}}</td></tr>{{/customer_id_label}}
+            </table>
+        </div>
+    </div>
+
+    <!-- Ship To -->
+    <div class="columns">
+        <div class="col-left">
+            {{#purchase_order}}<p><strong>Purchase Order:</strong> {{purchase_order}}</p>{{/purchase_order}}
+            {{#tracking_number}}<p><strong>{{delivery_method}} Tracking:</strong> {{tracking_number}}</p>{{/tracking_number}}
+        </div>
+        <div class="col-right ship-to">
+            <div class="ship-to-label">Ship to&nbsp;:</div>
+            <div class="customer-name">{{customer_name}}</div>
+            {{#customer_company}}<div>{{customer_company}}</div>{{/customer_company}}
+            <div>{{customer_street}}</div>
+            <div>{{customer_zip}} {{customer_city}}</div>
+            <div>{{customer_country}}</div>
+            {{#customer_email}}<div>e-mail: {{customer_email}}</div>{{/customer_email}}
+            {{#attn}}<div><strong>ATTN {{attn}}</strong></div>{{/attn}}
+            {{#customer_phone}}<div>TEL: {{customer_phone}}</div>{{/customer_phone}}
+        </div>
+    </div>
+
+    <!-- Items table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="text-align:left; width:55%;">Item</th>
+                <th style="text-align:left; width:20%;">Ref.</th>
+                <th class="text-right" style="width:15%;">Qty</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <span class="item-name">{{product_name}}</span>
+                    {{#product_unit}}<span class="item-unit">{{product_unit}}</span>{{/product_unit}}
+                </td>
+                <td>{{product_reference}}</td>
+                <td class="text-right">{{product_quantity}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- HS Code -->
+    {{#hs_code}}
+    <div class="hs-mention">
+        Non hazardous material — HS code {{hs_code}}<br>
+        <em>For Research Purposes — The item produced, purified and packed in France<br>
+        (see attached Material Safety Data Sheet)</em>
+    </div>
+    {{/hs_code}}
+
+    {{#notes}}
+    <div class="notes">
+        <div class="notes-label">Notes</div>
+        <div>{{notes}}</div>
+    </div>
+    {{/notes}}
+
+    <!-- Footer -->
+    <div class="doc-footer">
+        {{company_name}} — {{company_legal_form}} — SIRET: {{company_siret}} — VAT: {{company_vat_number}}<br>
+        {{company_email}} — {{company_website}}
+    </div>
+
+</div>
+</body>
+</html>

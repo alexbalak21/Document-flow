@@ -1,0 +1,50 @@
+:root {
+    --accent:       #1a56db;
+    --accent-light: #f8f9fa;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 13px; color: #333; background: #fff; }
+
+.page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 18mm 16mm; }
+
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--accent); }
+
+.brand-logo    { max-height: 48px; margin-bottom: 6px; display: block; }
+.company-name  { font-size: 16px; font-weight: 700; color: var(--accent); }
+.company-address { font-size: 11px; color: #555; margin-top: 2px; }
+.company-legal { font-size: 10px; color: #888; margin-top: 4px; }
+
+.doc-title { font-size: 26px; font-weight: 700; color: var(--accent); text-align: right; margin-bottom: 8px; }
+
+.meta-table { border-collapse: collapse; width: 200px; }
+.meta-table th { background: var(--accent); color: #fff; padding: 4px 10px; font-size: 11px; text-align: center; text-transform: uppercase; }
+.meta-table td { padding: 4px 10px; font-size: 12px; text-align: center; border: 1px solid #e5e7eb; }
+.mt-8 { margin-top: 8px; }
+.meta-table td:first-child { color: #888; text-align: left; }
+
+.columns { display: flex; gap: 24px; margin-bottom: 20px; }
+.col-left { flex: 1; font-size: 12px; color: #555; }
+.col-left p { margin-bottom: 4px; }
+.col-right { flex: 1; }
+.ship-to { text-align: right; font-size: 13px; }
+.ship-to-label { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.customer-name { font-weight: 700; font-size: 14px; }
+
+.items-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+.items-table thead tr { background: var(--accent); color: #fff; }
+.items-table th { padding: 8px 12px; font-size: 11px; text-transform: uppercase; }
+.items-table td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+.item-name { display: block; font-weight: 500; }
+.item-unit { display: block; font-size: 11px; color: #888; margin-top: 2px; }
+
+.hs-mention { text-align: center; font-size: 13px; font-weight: 600; color: var(--accent); margin: 16px 0; padding: 8px; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+.hs-mention em { display: block; font-weight: 400; font-size: 11px; color: #555; margin-top: 4px; }
+
+.notes { background: var(--accent-light); border-left: 3px solid var(--accent); padding: 10px 14px; margin-bottom: 16px; }
+.notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
+
+.doc-footer { position: absolute; bottom: 18mm; left: 16mm; right: 16mm; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #aaa; text-align: center; }
+
+.text-right { text-align: right; }

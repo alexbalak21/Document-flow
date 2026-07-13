@@ -1,3 +1,8 @@
+:root {
+    --accent:       #1a56db;
+    --accent-light: #f8faff;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -20,16 +25,16 @@ body {
     align-items: flex-start;
     margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #1a56db;
+    border-bottom: 2px solid var(--accent);
 }
 
 .brand-logo       { max-height: 48px; margin-bottom: 6px; display: block; }
-.company-name     { font-size: 18px; font-weight: 700; color: #1a56db; }
+.company-name     { font-size: 18px; font-weight: 700; color: var(--accent); }
 .company-address  { font-size: 11px; color: #555; margin-top: 2px; }
 .company-contact  { font-size: 11px; color: #555; }
 .company-legal    { font-size: 10px; color: #888; margin-top: 4px; }
 
-.invoice-title    { font-size: 28px; font-weight: 700; color: #1a56db; text-align: right; margin-bottom: 8px; }
+.invoice-title    { font-size: 28px; font-weight: 700; color: var(--accent); text-align: right; margin-bottom: 8px; }
 .meta-table td    { padding: 2px 8px; font-size: 12px; }
 .meta-table td:first-child { color: #888; text-align: right; }
 
@@ -43,15 +48,15 @@ body {
 .customer-vat     { font-size: 11px; color: #888; margin-top: 2px; }
 
 .items-table              { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-.items-table thead tr     { background: #1a56db; color: #fff; }
+.items-table thead tr     { background: var(--accent); color: #fff; }
 .items-table th           { padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 .items-table td           { padding: 10px 12px; border-bottom: 1px solid #eee; }
-.items-table tbody tr:hover { background: #f8faff; }
+.items-table tbody tr:hover { background: var(--accent-light); }
 
 .totals           { display: flex; justify-content: flex-end; margin-bottom: 24px; }
 .totals table     { min-width: 240px; border-collapse: collapse; }
 .totals td        { padding: 5px 12px; font-size: 13px; }
-.total-row td     { font-size: 15px; border-top: 2px solid #1a56db; padding-top: 8px; }
+.total-row td     { font-size: 15px; border-top: 2px solid var(--accent); padding-top: 8px; }
 
 .vat-mention {
     font-size: 10px;
@@ -62,7 +67,23 @@ body {
     font-style: italic;
 }
 
-.notes            { background: #f8f9fa; border-left: 3px solid #1a56db; padding: 12px 16px; margin-bottom: 16px; }
+.late-fee-mention {
+    font-size: 10px;
+    color: #888;
+    padding-top: 4px;
+    margin-bottom: 12px;
+    font-style: italic;
+}
+
+.fx-rate-note {
+    font-size: 10px;
+    color: #888;
+    text-align: right;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+.notes            { background: #f8f9fa; border-left: 3px solid var(--accent); padding: 12px 16px; margin-bottom: 16px; }
 .notes-label      { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 4px; }
 
 .doc-footer {
@@ -129,4 +150,85 @@ body {
     border-top: 1px dotted #ddd;
     padding-top: 4px;
     color: #bbb;
+}
+
+/* ── Meta table header row ────────────────────────────────────────────── */
+.meta-table th {
+    background: var(--accent);
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+.meta-table td { text-align: center; }
+.mt-8 { margin-top: 8px; }
+
+/* ── Delivery row ─────────────────────────────────────────────────────── */
+.delivery-row td { background: #f8f9fa; color: #555; }
+
+/* ── HS Code / research mention ───────────────────────────────────────── */
+.hs-mention {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 16px 0;
+    padding: 8px;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+.hs-mention em { display: block; font-weight: 400; font-size: 12px; color: #555; margin-top: 2px; }
+
+/* ── Payment terms inline ─────────────────────────────────────────────── */
+.payment-terms-block {
+    font-size: 12px;
+    color: #555;
+    margin: 12px 0;
+}
+
+/* ── Bank block ───────────────────────────────────────────────────────── */
+.bank-block {
+    margin-top: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+.bank-title {
+    background: #1e2533;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+}
+.bank-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.bank-table td { padding: 4px 12px; border-bottom: 1px solid #f3f4f6; }
+.bank-table td:first-child { color: #888; width: 35%; }
+.bank-table tr:last-child td { border-bottom: none; }
+
+/* ── Thank you footer ─────────────────────────────────────────────────── */
+.doc-footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+}
+.footer-thankyou {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+.footer-contact {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 8px;
+}
+.footer-identity {
+    font-size: 10px;
+    color: #aaa;
 }

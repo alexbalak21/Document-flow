@@ -3,15 +3,25 @@
     "slug": "proposal",
     "version": "1.0",
     "author": "Document Flow",
-    "description": "Commercial proposal sent before a formal quote — no legal acceptance block",
+    "description": "Commercial proposal sent before a formal quote \u2014 no legal acceptance block",
     "template": "template.html",
     "style": "style.css",
     "form": "form.json",
     "i18n": "i18n.json",
-    "languages": ["en", "fr"],
-    "entities": ["customer", "product"],
+    "languages": [
+        "en",
+        "fr"
+    ],
+    "entities": [
+        "customer",
+        "product"
+    ],
     "icon": "bi-file-earmark-richtext",
     "sidebar_label": "Proposal",
     "sidebar_group": "Sales",
-    "prefix": "PROP-"
+    "prefix": "PROP-",
+    "accent_color": "#4f46e5",
+    "accent_color_light": "#eef2ff",
+    "sidebar_group_order": 1,
+    "sidebar_order": 1
 }

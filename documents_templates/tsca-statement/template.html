@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TSCA Statement</title>
+    <style>{{style}}</style>
+</head>
+<body>
+<div class="page">
+
+    <!-- Company header -->
+    <div class="company-header">
+        {{#company_logo}}
+        <img src="{{company_logo}}" alt="{{company_name}}" class="brand-logo">
+        {{/company_logo}}
+        <div class="company-block">
+            <div class="company-name">{{company_name}}</div>
+            <div>{{company_street}}</div>
+            <div>{{company_zip}} {{company_city}} — {{company_country}}</div>
+            <div>Contact: {{company_email}}</div>
+            <div>EORI# {{company_eori}}</div>
+            <div>VAT# {{company_vat_number}}</div>
+        </div>
+    </div>
+
+    <div class="to-whom">To whom it may concern</div>
+
+    <h1 class="doc-title">TSCA STATEMENT</h1>
+
+    <p class="intro">I certify that all chemical substances in this shipment:</p>
+
+    <div class="checkbox-block">
+        <div class="checkbox-item">
+            <span class="checkbox">&#9744;</span>
+            <span>DOES COMPLY WITH ALL APPLICABLE RULES OR ORDERS UNDER THE TOXIC SUBSTANCES CONTROL ACT (TSCA) AND THAT I AM NOT OFFERING A CHEMICAL SUBSTANCE FOR ENTRY INTO THE UNITED STATES IN VIOLATION OF TSCA OR ANY APPLICABLE RULE OR ORDER UNDER TSCA.</span>
+        </div>
+        <div class="checkbox-item checked">
+            <span class="checkbox">&#9745;</span>
+            <span>ARE NOT SUBJECT TO THE TOXIC SUBSTANCES CONTROL ACT (TSCA).</span>
+        </div>
+    </div>
+
+    <p class="contact-note">Please, contact the undersigned if further information is required</p>
+
+    <div class="signature-block">
+        <div class="sig-line">SIGNATURE: <span class="sig-line-blank"></span></div>
+        <div class="sig-line">NAME: <span class="sig-value">{{signatory_name}}</span></div>
+        <div class="sig-line">TITLE: <span class="sig-value">{{signatory_title}}</span>
+            {{#signatory_email}}<span class="sig-email">{{signatory_email}}</span>{{/signatory_email}}
+        </div>
+        <div class="sig-line">COMPANY: <span class="sig-value">{{company_name}}, {{company_city}}, {{company_country}}</span></div>
+        <div class="sig-line">DATE: <span class="sig-value">{{statement_date}}</span></div>
+    </div>
+
+    <div class="doc-footer">
+        {{company_name}} — {{company_legal_form}} — SIRET: {{company_siret}} — VAT: {{company_vat_number}}<br>
+        {{company_email}} — {{company_website}}
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+[
+    {
+        "section": "USDA Statement",
+        "fields": [
+            { "type": "date",     "name": "statement_date",     "label": "Date",                        "required": true  },
+            { "type": "text",     "name": "statement_city",     "label": "City",                        "required": false },
+            { "type": "text",     "name": "usda_guideline",     "label": "USDA Guideline",              "required": false, "placeholder": "e.g. 1121" },
+            { "type": "text",     "name": "signatory_name",     "label": "Signatory Name",              "required": true  },
+            { "type": "text",     "name": "signatory_title",    "label": "Title",                       "required": true  },
+            { "type": "text",     "name": "signatory_phone",    "label": "Phone",                       "required": false },
+            { "type": "textarea", "name": "product_details",    "label": "Product Details (full description for statement)", "required": false }
+        ]
+    }
+]

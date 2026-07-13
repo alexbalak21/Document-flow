@@ -1,0 +1,20 @@
+{
+    "name": "USDA Statement",
+    "slug": "usda-statement",
+    "version": "1.0",
+    "author": "Document Flow",
+    "description": "USDA compliance statement for biological material shipments",
+    "template": "template.html",
+    "style": "style.css",
+    "form": "form.json",
+    "entities": [
+        "product"
+    ],
+    "icon": "bi-shield-check",
+    "sidebar_label": "USDA Statement",
+    "sidebar_group": "Compliance",
+    "accent_color": "#1a56db",
+    "accent_color_light": "#f8f9fa",
+    "sidebar_group_order": 3,
+    "sidebar_order": 2
+}

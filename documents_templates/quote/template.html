@@ -81,6 +81,19 @@
                 <td class="text-right" style="vertical-align:top;">{{vat_rate}}&nbsp;%</td>
                 <td class="text-right" style="vertical-align:top;">{{subtotal}}&nbsp;{{company_currency_symbol}}</td>
             </tr>
+            {{#delivery_method}}
+            <tr class="delivery-row">
+                <td style="vertical-align:top;"></td>
+                <td>
+                    <span class="item-name">Delivery</span>
+                    <span class="item-unit">{{delivery_method}}</span>
+                </td>
+                <td class="text-right">1</td>
+                <td class="text-right">{{delivery_fee}}&nbsp;{{company_currency_symbol}}</td>
+                <td></td>
+                <td class="text-right">{{delivery_fee}}&nbsp;{{company_currency_symbol}}</td>
+            </tr>
+            {{/delivery_method}}
         </tbody>
     </table>
 
