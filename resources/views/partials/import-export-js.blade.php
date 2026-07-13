@@ -33,11 +33,28 @@ async function sendImport(text) {
     const json = await res.json();
     if (json.error) { showImportError(json.error); return; }
 
+    // Step 1 — Auto-activate optional sections that have data
+    // Must happen BEFORE filling fields so inputs are enabled
+    if (json.sections_to_activate && json.sections_to_activate.length > 0) {
+        json.sections_to_activate.forEach(sectionId => {
+            const toggle = document.getElementById(sectionId + '-toggle');
+            if (toggle && !toggle.checked) {
+                toggle.checked = true;
+                documentFlowToggleSection(sectionId, true);
+            }
+        });
+    }
+
+    // Step 2 — Fill all fields
     let filled = 0;
     for (const [name, value] of Object.entries(json.fields)) {
         const el = document.querySelector(`[name="${name}"]`);
-        if (el) { el.value = value ?? ''; filled++; }
+        if (el) {
+            el.value = value ?? '';
+            filled++;
+        }
     }
+
     showImportSuccess(`${filled} field(s) filled from JSON.`);
 }
 

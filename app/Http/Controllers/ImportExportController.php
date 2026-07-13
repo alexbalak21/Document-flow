@@ -56,14 +56,28 @@ class ImportExportController extends Controller
         }
 
         // Document-specific fields from form.json
+        // Track optional section field names so the importer knows to auto-activate them
+        $optionalSectionFields = [];
         foreach ($form as $section) {
+            $isOptional = ! empty($section['optional']);
             foreach ($section['fields'] as $field) {
                 $model[$field['name']] = match($field['type']) {
                     'number', 'currency' => 0,
-                    'date'   => date('Y-m-d'),
-                    default  => '',
+                    'date'               => date('Y-m-d'),
+                    'select'             => $field['options'][0] ?? '',
+                    default              => '',
                 };
+                if ($isOptional) {
+                    $optionalSectionFields[$field['name']] = $section['section'];
+                }
             }
+        }
+
+        // Hint which fields belong to optional (collapsed) sections.
+        // When a non-empty value is present for any of these fields during import,
+        // the importer will auto-activate (expand) the corresponding section.
+        if ($optionalSectionFields) {
+            $model['_optional_sections'] = $optionalSectionFields;
         }
 
         $filename = $slug . '-model.json';
@@ -106,6 +120,21 @@ class ImportExportController extends Controller
             return response()->json(['error' => $data], 422);
         }
 
+        // Load form to know which fields belong to optional (collapsed) sections
+        $type = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $form = json_decode(file_get_contents($type->config_path), true);
+
+        // Map: field_name -> section DOM id (e.g. 'fx_currency' -> 'section-foreign-currency')
+        $optionalFieldToSection = [];
+        foreach ($form as $section) {
+            if (! empty($section['optional'])) {
+                $sectionId = 'section-' . \Illuminate\Support\Str::slug($section['section']);
+                foreach ($section['fields'] as $field) {
+                    $optionalFieldToSection[$field['name']] = $sectionId;
+                }
+            }
+        }
+
         // Flatten customer/product nested keys to match form field names
         $flat = [];
 
@@ -117,25 +146,40 @@ class ImportExportController extends Controller
 
         if (isset($data['product']) && is_array($data['product'])) {
             foreach ($data['product'] as $k => $v) {
-                // map quantity → product_quantity, unit_price → product_unit_price
+                // product_unit  -> product_unit   (not product_product_unit)
+                // quantity      -> product_quantity
+                // unit_price    -> product_unit_price
                 $mapped = match($k) {
-                    'quantity'   => 'product_quantity',
-                    'unit_price' => 'product_unit_price',
-                    default      => 'product_' . $k,
+                    'quantity'     => 'product_quantity',
+                    'unit_price'   => 'product_unit_price',
+                    'product_unit' => 'product_unit',
+                    default        => 'product_' . $k,
                 };
                 $flat[$mapped] = $v;
             }
         }
 
-        // Copy top-level fields (document-specific)
+        // Copy top-level fields (skip meta keys and nested objects)
+        $skip = ['_template', '_version', '_reference', '_status', '_optional_sections', 'customer', 'product'];
         foreach ($data as $k => $v) {
-            if (in_array($k, ['_template', '_version', '_reference', '_status', 'customer', 'product'])) continue;
-            if (! is_array($v)) {
-                $flat[$k] = $v;
-            }
+            if (in_array($k, $skip) || is_array($v)) continue;
+            $flat[$k] = $v;
         }
 
-        return response()->json(['fields' => $flat]);
+        // Determine which optional sections have at least one non-empty value
+        // so the JS can auto-expand and enable them before filling fields
+        $sectionsToActivate = [];
+        foreach ($flat as $fieldName => $value) {
+            if (isset($optionalFieldToSection[$fieldName]) && $value !== '' && $value !== null && $value !== 0) {
+                $sectionsToActivate[] = $optionalFieldToSection[$fieldName];
+            }
+        }
+        $sectionsToActivate = array_values(array_unique($sectionsToActivate));
+
+        return response()->json([
+            'fields'               => $flat,
+            'sections_to_activate' => $sectionsToActivate,
+        ]);
     }
 
     // =========================================================================
