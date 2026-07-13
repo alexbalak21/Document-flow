@@ -9,8 +9,12 @@ class CompanySettingsController extends Controller
 {
     public function edit()
     {
-        $company = config('company');
-        $logo    = CompanyAsset::logo();
+        $companyPath = storage_path('app/company.json');
+        $company = file_exists($companyPath)
+            ? (json_decode(file_get_contents($companyPath), true) ?? [])
+            : [];
+
+        $logo = CompanyAsset::logo();
 
         return view('settings.company', compact('company', 'logo'));
     }
@@ -18,7 +22,7 @@ class CompanySettingsController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'logo' => ['nullable', 'file', 'image', 'max:2048'], // max 2MB
+            'logo' => ['nullable', 'file', 'image', 'max:2048'],
         ]);
 
         // ── Handle logo upload ────────────────────────────────────────────
@@ -30,80 +34,41 @@ class CompanySettingsController extends Controller
             CompanyAsset::deleteLogo();
         }
 
-        // ── Write text fields to .env (no logo, no long texts) ───────────
-        $fields = [
-            'COMPANY_NAME'              => $request->name,
-            'COMPANY_LEGAL_FORM'        => $request->legal_form,
-            'COMPANY_SHARE_CAPITAL'     => $request->share_capital,
-            'COMPANY_STREET'            => $request->street,
-            'COMPANY_CITY'              => $request->city,
-            'COMPANY_ZIP'               => $request->zip,
-            'COMPANY_COUNTRY'           => $request->country,
-            'COMPANY_SIREN'             => $request->siren,
-            'COMPANY_SIRET'             => $request->siret,
-            'COMPANY_VAT_NUMBER'        => $request->vat_number,
-            'COMPANY_EORI'              => $request->eori,
-            'COMPANY_EMAIL'             => $request->email,
-            'COMPANY_WEBSITE'           => $request->website,
-            'COMPANY_CURRENCY'          => $request->default_currency,
-            'COMPANY_CURRENCY_SYMBOL'   => $request->default_currency_symbol,
-            'COMPANY_VAT_RATE'          => $request->default_vat_rate,
-            'COMPANY_INVOICE_DUE_DAYS'  => $request->default_invoice_due_days,
-            'COMPANY_QUOTE_VALID_DAYS'  => $request->default_quote_valid_days,
-            'COMPANY_PAYMENT_METHOD'    => $request->default_payment_method,
-        ];
-
-        $this->writeEnv($fields);
-
-        // ── Long text fields go to storage JSON (not .env) ────────────────
-        $longFields = [
-            'vat_mention'           => $request->vat_mention,
-            'late_payment_rate'     => $request->late_payment_rate,
-            'late_payment_flat_fee' => $request->late_payment_flat_fee,
-            'late_payment_text'     => $request->late_payment_text,
-            'late_payment_fee_text' => $request->late_payment_fee_text,
-            'terms_text'            => $request->terms_text,
+        // ── Write all company fields to storage/app/company.json ──────────
+        $data = [
+            'name'                    => $request->name,
+            'legal_form'              => $request->legal_form,
+            'share_capital'           => $request->share_capital,
+            'street'                  => $request->street,
+            'city'                    => $request->city,
+            'zip'                     => $request->zip,
+            'country'                 => $request->country,
+            'siren'                   => $request->siren,
+            'siret'                   => $request->siret,
+            'vat_number'              => $request->vat_number,
+            'eori'                    => $request->eori,
+            'email'                   => $request->email,
+            'website'                 => $request->website,
+            'default_currency'        => $request->default_currency,
+            'default_currency_symbol' => $request->default_currency_symbol,
+            'default_vat_rate'        => $request->default_vat_rate,
+            'default_invoice_due_days'=> $request->default_invoice_due_days,
+            'default_quote_valid_days'=> $request->default_quote_valid_days,
+            'default_payment_method'  => $request->default_payment_method,
+            'vat_mention'             => $request->vat_mention,
+            'late_payment_rate'       => $request->late_payment_rate,
+            'late_payment_flat_fee'   => $request->late_payment_flat_fee,
+            'late_payment_text'       => $request->late_payment_text,
+            'late_payment_fee_text'   => $request->late_payment_fee_text,
+            'terms_text'              => $request->terms_text,
         ];
 
         file_put_contents(
-            storage_path('app/company_extra.json'),
-            json_encode($longFields, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+            storage_path('app/company.json'),
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
 
         return redirect()->route('settings.company')
             ->with('success', 'Company settings saved.');
-    }
-
-    private function writeEnv(array $fields): void
-    {
-        $envPath    = base_path('.env');
-        $envContent = file_get_contents($envPath);
-
-        foreach ($fields as $key => $value) {
-            $escaped = $this->escapeEnvValue((string) $value);
-
-            if (preg_match("/^{$key}=/m", $envContent)) {
-                $envContent = preg_replace(
-                    "/^{$key}=.*/m",
-                    "{$key}={$escaped}",
-                    $envContent
-                );
-            } else {
-                $envContent .= "\n{$key}={$escaped}";
-            }
-        }
-
-        // Remove COMPANY_LOGO from .env if it exists (moved to DB)
-        $envContent = preg_replace('/^COMPANY_LOGO=.*$/m', '', $envContent);
-
-        file_put_contents($envPath, $envContent);
-    }
-
-    private function escapeEnvValue(string $value): string
-    {
-        if (preg_match('/[\s,;#"\'\\\\]/', $value) || $value === '') {
-            $value = '"' . addslashes($value) . '"';
-        }
-        return $value;
     }
 }

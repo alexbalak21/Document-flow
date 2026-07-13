@@ -428,11 +428,16 @@ class DocumentController extends Controller
 
         $html = str_replace('{{style}}', $cssWithColors, $html);
 
-        $company = config('company');
+        // Read all company data from storage/app/company.json
+        $companyPath = storage_path('app/company.json');
+        $company = file_exists($companyPath)
+            ? (json_decode(file_get_contents($companyPath), true) ?? [])
+            : [];
+
         $data['company_name']                  = $company['name']                    ?? '';
-        // Logo comes from DB, not config
+        // Logo comes from DB
         $logoAsset = CompanyAsset::logo();
-        $data['company_logo'] = $logoAsset ? $logoAsset->data_uri : '';
+        $data['company_logo']                  = $logoAsset ? $logoAsset->data_uri : '';
         $data['company_legal_form']            = $company['legal_form']              ?? '';
         $data['company_share_capital']         = $company['share_capital']           ?? '';
         $data['company_street']                = $company['street']                  ?? '';
@@ -447,16 +452,10 @@ class DocumentController extends Controller
         $data['company_website']               = $company['website']                 ?? '';
         $data['company_currency']              = $company['default_currency']        ?? 'EUR';
         $data['company_currency_symbol']       = $company['default_currency_symbol'] ?? '€';
-        // Long text fields from storage JSON (not .env)
-        $extraPath = storage_path('app/company_extra.json');
-        $extra = file_exists($extraPath)
-            ? json_decode(file_get_contents($extraPath), true)
-            : [];
-
-        $data['company_vat_mention']           = $extra['vat_mention']           ?? ($company['vat_mention']           ?? '');
-        $data['company_terms_text']            = $extra['terms_text']              ?? ($company['terms_text']              ?? '');
-        $data['company_late_payment_text']     = $extra['late_payment_text']       ?? ($company['late_payment_text']       ?? '');
-        $data['company_late_payment_fee_text'] = $extra['late_payment_fee_text']   ?? ($company['late_payment_fee_text']   ?? '');
+        $data['company_vat_mention']           = $company['vat_mention']             ?? '';
+        $data['company_terms_text']            = $company['terms_text']              ?? '';
+        $data['company_late_payment_text']     = $company['late_payment_text']       ?? '';
+        $data['company_late_payment_fee_text'] = $company['late_payment_fee_text']   ?? '';
 
         // Inject bank details from config/bank.php
         $bankKey     = $data['bank_account'] ?? config('bank.default', 'int');
