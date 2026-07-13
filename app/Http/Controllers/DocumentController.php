@@ -366,9 +366,54 @@ class DocumentController extends Controller
             $data['subtotal']   = number_format($subtotal,  2, '.', '');
             $data['vat_amount'] = number_format($vatAmount, 2, '.', '');
             $data['total']      = number_format($total,     2, '.', '');
+
+            $lateFee = (float) config('company.late_payment_flat_fee', 0);
+            $data['late_payment_flat_fee'] = number_format($lateFee, 2, '.', '');
+
+            // Foreign currency conversion (optional section)
+            if (! empty($data['fx_currency']) && ! empty($data['fx_rate'])) {
+                $rate = (float) $data['fx_rate'];
+
+                $data['fx_subtotal']   = number_format($subtotal   * $rate, 2, '.', '');
+                $data['fx_vat']        = number_format($vatAmount  * $rate, 2, '.', '');
+                $data['fx_total']      = number_format($total      * $rate, 2, '.', '');
+                $data['fx_unit_price'] = number_format($unitPrice  * $rate, 2, '.', '');
+                $data['fx_symbol']     = $this->currencySymbol($data['fx_currency']);
+                $data['fx_late_fee']   = number_format($lateFee    * $rate, 2, '.', '');
+
+                if (! empty($data['delivery_fee'])) {
+                    $data['fx_delivery_fee'] = number_format(((float) $data['delivery_fee']) * $rate, 2, '.', '');
+                }
+
+                // Non-EUR invoices are always settled via the international account.
+                $data['bank_account'] = 'int';
+            }
+
+            // The template engine only supports truthy {{#section}} blocks (no
+            // {{^section}} "unless"), so provide an explicit flag for the
+            // non-FX ("normal") rendering path.
+            $data['no_fx'] = empty($data['fx_currency']) ? '1' : '';
         }
 
         return $data;
+    }
+
+    /**
+     * Map a currency code to its display symbol.
+     */
+    private function currencySymbol(string $code): string
+    {
+        return match (strtoupper($code)) {
+            'USD'   => '$',
+            'GBP'   => '£',
+            'INR'   => '₹',
+            'JPY'   => '¥',
+            'CHF'   => 'CHF',
+            'CAD'   => 'CA$',
+            'AUD'   => 'A$',
+            'CNY'   => '¥',
+            default => $code,
+        };
     }
 
     /**
@@ -473,14 +518,24 @@ class DocumentController extends Controller
             $data['bank_rib_key']        = $bankAccount['rib_key']        ?? '';
         }
 
-        $html = preg_replace_callback(
-            '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
-            function ($matches) use ($data) {
-                $value = trim($data[$matches[1]] ?? '');
-                return $value !== '' ? $matches[2] : '';
-            },
-            $html
-        );
+        // Resolve conditional blocks. Runs repeatedly so that blocks nested
+        // inside other blocks (e.g. the delivery row nested inside the
+        // FX / non-FX items table wrappers) are also evaluated, not just the
+        // outermost block on a single pass.
+        for ($i = 0; $i < 5; $i++) {
+            $previous = $html;
+            $html = preg_replace_callback(
+                '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
+                function ($matches) use ($data) {
+                    $value = trim($data[$matches[1]] ?? '');
+                    return $value !== '' ? $matches[2] : '';
+                },
+                $html
+            );
+            if ($html === $previous) {
+                break;
+            }
+        }
 
         foreach ($data as $key => $value) {
             $html = str_replace('{{' . $key . '}}', htmlspecialchars((string) $value), $html);
