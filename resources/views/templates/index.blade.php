@@ -219,49 +219,62 @@
 </div>
 
 <script>
-async function updateAccentColor(input) {
-    const id      = input.dataset.templateId;
-    const color   = input.value;
-    const label   = document.getElementById('color-label-' + id);
-    const status  = document.getElementById('color-status-' + id);
+// Debounce: wait 600ms after the user stops dragging before saving
+const _colorTimers = {};
 
+function updateAccentColor(input) {
+    const id    = input.dataset.templateId;
+    const color = input.value;
+    const label  = document.getElementById('color-label-' + id);
+    const status = document.getElementById('color-status-' + id);
+
+    // Update the hex label instantly while dragging
     if (label) label.textContent = color;
 
+    // Debounce the actual save
+    clearTimeout(_colorTimers[id]);
+    _colorTimers[id] = setTimeout(() => _saveColor(id, color, status), 600);
+}
+
+async function _saveColor(id, color, status) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
     if (status) {
-        status.textContent = 'Saving...';
+        status.textContent = 'Saving…';
         status.className   = 'small text-muted';
         status.classList.remove('d-none');
     }
 
     try {
         const res = await fetch(`/templates/${id}/color`, {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept':       'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content
-                    ?? '{{ csrf_token() }}',
+                'X-CSRF-TOKEN': csrfToken,
             },
             body: JSON.stringify({ accent_color: color }),
         });
 
+        if (!res.ok) {
+            // Surface the HTTP error (422 validation, 419 CSRF, etc.)
+            const text = await res.text();
+            throw new Error(`HTTP ${res.status} — ${text.substring(0, 120)}`);
+        }
+
         const json = await res.json();
 
         if (status) {
-            if (json.success) {
-                status.textContent = json.message;
-                status.className   = 'small text-success';
-            } else {
-                status.textContent = 'Error saving color.';
-                status.className   = 'small text-danger';
-            }
+            status.textContent = json.success ? '✓ ' + json.message : 'Error saving color.';
+            status.className   = json.success ? 'small text-success' : 'small text-danger';
             setTimeout(() => status.classList.add('d-none'), 3000);
         }
     } catch (e) {
         if (status) {
             status.textContent = 'Error: ' + e.message;
-            status.className   = 'small text-danger';
+            status.className   = 'small text-danger d-block';
         }
+        console.error('updateAccentColor failed:', e);
     }
 }
 </script>

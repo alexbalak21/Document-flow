@@ -282,16 +282,13 @@ class TemplateController extends Controller
         // Regenerate all snapshots with new color
         $count      = 0;
         $controller = app(DocumentController::class);
-        $method     = new \ReflectionMethod($controller, 'renderHtml');
-        $method->setAccessible(true);
 
         Document::where('document_type_id', $template->id)
             ->whereNotNull('json_data')
             ->get()
-            ->each(function ($doc) use ($template, $controller, $method, &$count) {
+            ->each(function ($doc) use ($template, $controller, &$count) {
                 try {
-                    $lang = $doc->json_data['lang'] ?? 'en';
-                    $html = $method->invoke($controller, $template, $doc->json_data);
+                    $html = $controller->renderHtml($template, $doc->json_data);
                     $doc->update(['html_snapshot' => $html]);
                     $count++;
                 } catch (\Throwable $e) {}

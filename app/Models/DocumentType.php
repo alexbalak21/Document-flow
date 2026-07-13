@@ -84,8 +84,9 @@ class DocumentType extends Model
 
     /**
      * Read the manifest.json for this template.
+     * Public so controllers (TemplateController, DocumentController) can call it.
      */
-    private function readManifest(): array
+    public function readManifest(): array
     {
         $path = $this->template_dir . '/manifest.json';
         if (! file_exists($path)) return [];
