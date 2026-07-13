@@ -1,0 +1,11 @@
+cd ~/app
+php artisan tinker
+
+
+$user = new App\Models\User;
+$user->name = 'Alex';
+$user->email = 'alex@example.com';
+$user->password = bcrypt('secret123');
+$user->save();
+
+exit
