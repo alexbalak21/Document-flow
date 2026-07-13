@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
+use Mpdf\Mpdf;
 
 class PdfController extends Controller
 {
     /**
      * Generate and download a PDF for a saved document.
-     * Uses the stored html_snapshot so no re-render needed.
      */
     public function download(Document $document)
     {
@@ -24,10 +23,18 @@ class PdfController extends Controller
         try {
             $pdf = $this->buildPdf($html);
         } catch (\Throwable $e) {
+            // In development, show the real error so we can debug it
+            if (config('app.debug')) {
+                throw $e;
+            }
             return back()->with('error', 'PDF generation failed: ' . $e->getMessage());
         }
 
-        return $pdf->download($filename);
+        return response($pdf, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-store, no-cache',
+        ]);
     }
 
     /**
@@ -45,77 +52,49 @@ class PdfController extends Controller
         try {
             $pdf = $this->buildPdf($html);
         } catch (\Throwable $e) {
+            if (config('app.debug')) {
+                throw $e;
+            }
             return back()->with('error', 'PDF generation failed: ' . $e->getMessage());
         }
 
-        return $pdf->stream($filename);
+        return response($pdf, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Cache-Control'       => 'no-store, no-cache',
+        ]);
     }
 
     // -------------------------------------------------------------------------
     // HELPERS
     // -------------------------------------------------------------------------
 
-    private function buildPdf(string $html): \Barryvdh\DomPDF\PDF
+    private function buildPdf(string $html): string
     {
-        // dompdf does not support CSS custom properties (var(--name)).
-        // We resolve them by extracting values from the :root block and
-        // replacing every var(--name) occurrence in the full HTML string.
-        $html = $this->resolveCssVariables($html);
-
-        $pdf = Pdf::loadHTML($html)
-            ->setPaper('a4')
-            ->setOption('isPhpEnabled', false)
-            ->setOption('isRemoteEnabled', true)   // allows base64 data-uri images (company logo)
-            ->setOption('defaultMediaType', 'print')
-            ->setOption('isFontSubsettingEnabled', true);
-
-        return $pdf;
-    }
-
-    /**
-     * Extract CSS variable definitions from :root{} blocks and resolve
-     * every var(--name) reference in the HTML so dompdf can render them.
-     *
-     * Supports simple values and falls back gracefully if no :root block
-     * is found (the HTML is returned unchanged).
-     */
-    private function resolveCssVariables(string $html): string
-    {
-        // Collect all CSS variable definitions from :root { ... } blocks.
-        $variables = [];
-
-        // Match one or more :root { ... } blocks (the template injects a
-        // second one at the top of the <style> to override the accent color).
-        if (preg_match_all('/:root\s*\{([^}]+)\}/s', $html, $rootMatches)) {
-            foreach ($rootMatches[1] as $rootBody) {
-                // Each variable line: --name: value;
-                if (preg_match_all('/--([a-zA-Z0-9_-]+)\s*:\s*([^;]+);/', $rootBody, $varMatches, PREG_SET_ORDER)) {
-                    foreach ($varMatches as $match) {
-                        $variables['--' . trim($match[1])] = trim($match[2]);
-                    }
-                }
-            }
+        // mPDF needs a writable temp directory — use Laravel's storage path
+        $tmpDir = storage_path('app/mpdf-tmp');
+        if (! is_dir($tmpDir)) {
+            mkdir($tmpDir, 0775, true);
         }
 
-        if (empty($variables)) {
-            return $html;
-        }
+        $mpdf = new Mpdf([
+            'mode'                => 'utf-8',
+            'format'              => 'A4',
+            'margin_top'          => 0,
+            'margin_bottom'       => 0,
+            'margin_left'         => 0,
+            'margin_right'        => 0,
+            'setAutoTopMargin'    => false,
+            'setAutoBottomMargin' => false,
+            'tempDir'             => $tmpDir,
+        ]);
 
-        // Replace var(--name) with the resolved value.
-        // We loop until no more substitutions are needed (handles nested vars).
-        $maxPasses = 5;
-        for ($i = 0; $i < $maxPasses; $i++) {
-            $previous = $html;
-            foreach ($variables as $varName => $value) {
-                $pattern = '/var\(\s*' . preg_quote($varName, '/') . '\s*\)/';
-                $html    = preg_replace($pattern, $value, $html);
-            }
-            if ($html === $previous) {
-                break; // no more substitutions
-            }
-        }
+        $mpdf->img_dpi = 200;
+        $mpdf->SetDisplayMode('fullpage');
 
-        return $html;
+        $mpdf->WriteHTML($html);
+
+        return $mpdf->Output('', 'S'); // 'S' = return as string
     }
 
     private function buildFilename(Document $document): string
