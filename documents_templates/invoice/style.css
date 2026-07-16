@@ -14,9 +14,16 @@ body {
 
 .page {
     width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto;
-    padding: 20mm 18mm;
+    height: 281mm;
+    /* exact A4 printable area (297mm − 2×8mm margin) */
+    margin: 25px auto 10px;
+    background: white;
+    padding: 8mm;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .15);
+    position: relative;
 }
 
 .header {
@@ -231,4 +238,31 @@ body {
 .footer-identity {
     font-size: 10px;
     color: #aaa;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 8mm;
+}
+
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    html, body { background: white !important; }
+    .page {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        box-shadow: none;
+        padding: 0;
+        page-break-after: auto;
+    }
+    .no-print, .page-toolbar { display: none !important; }
+    .header, .bill-to, .totals, .vat-mention, .bank-block, footer, .doc-footer {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    a { color: black; text-decoration: none; }
 }
