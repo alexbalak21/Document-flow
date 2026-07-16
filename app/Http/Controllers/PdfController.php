@@ -3,14 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Document;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-use Mpdf\Mpdf;
 
 class PdfController extends Controller
 {
-    /**
-     * Generate and download a PDF for a saved document.
-     */
     public function download(Document $document)
     {
         $filename = $this->buildFilename($document);
@@ -23,10 +20,7 @@ class PdfController extends Controller
         try {
             $pdf = $this->buildPdf($html);
         } catch (\Throwable $e) {
-            // In development, show the real error so we can debug it
-            if (config('app.debug')) {
-                throw $e;
-            }
+            if (config('app.debug')) throw $e;
             return back()->with('error', 'PDF generation failed: ' . $e->getMessage());
         }
 
@@ -37,9 +31,6 @@ class PdfController extends Controller
         ]);
     }
 
-    /**
-     * Generate and inline-display (open in browser tab) a PDF.
-     */
     public function preview(Document $document)
     {
         $filename = $this->buildFilename($document);
@@ -52,9 +43,7 @@ class PdfController extends Controller
         try {
             $pdf = $this->buildPdf($html);
         } catch (\Throwable $e) {
-            if (config('app.debug')) {
-                throw $e;
-            }
+            if (config('app.debug')) throw $e;
             return back()->with('error', 'PDF generation failed: ' . $e->getMessage());
         }
 
@@ -71,30 +60,18 @@ class PdfController extends Controller
 
     private function buildPdf(string $html): string
     {
-        // mPDF needs a writable temp directory — use Laravel's storage path
-        $tmpDir = storage_path('app/mpdf-tmp');
-        if (! is_dir($tmpDir)) {
-            mkdir($tmpDir, 0775, true);
+        $serviceUrl = config('services.pdf.url', 'http://127.0.0.1:5001');
+
+        $response = Http::timeout(30)
+            ->withBody($html, 'text/html; charset=UTF-8')
+            ->post($serviceUrl . '/pdf');
+
+        if ($response->failed()) {
+            $error = $response->json('error') ?? $response->body();
+            throw new \RuntimeException('PDF service error: ' . $error);
         }
 
-        $mpdf = new Mpdf([
-            'mode'                => 'utf-8',
-            'format'              => 'A4',
-            'margin_top'          => 0,
-            'margin_bottom'       => 0,
-            'margin_left'         => 0,
-            'margin_right'        => 0,
-            'setAutoTopMargin'    => false,
-            'setAutoBottomMargin' => false,
-            'tempDir'             => $tmpDir,
-        ]);
-
-        $mpdf->img_dpi = 200;
-        $mpdf->SetDisplayMode('fullpage');
-
-        $mpdf->WriteHTML($html);
-
-        return $mpdf->Output('', 'S'); // 'S' = return as string
+        return $response->body();
     }
 
     private function buildFilename(Document $document): string
