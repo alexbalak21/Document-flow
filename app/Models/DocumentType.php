@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DocumentType extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'slug',
@@ -14,14 +17,7 @@ class DocumentType extends Model
         'version',
         'template_path',
         'config_path',
-        'preview_image',
         'active',
-        'icon',
-        'sidebar_label',
-        'sidebar_group',
-        'sidebar_group_order',
-        'sidebar_order',
-        'accent_color',
     ];
 
     protected $casts = [
@@ -30,68 +26,40 @@ class DocumentType extends Model
 
     public function documents(): HasMany
     {
-        return $this->hasMany(\App\Models\Document::class);
+        return $this->hasMany(Document::class);
     }
 
     /**
-     * Always derive template/config paths from slug at runtime.
-     * This makes the stored paths in the DB irrelevant — moving the
-     * project or installing on a different machine never breaks paths.
+     * Real template.html path — always derived from slug + manifest.json on
+     * disk. The stored `template_path` DB column is intentionally ignored;
+     * disk is the single source of truth so templates can be edited/moved
+     * without a migration.
      */
-    public function getTemplateDirAttribute(): string
-    {
-        return storage_path('app/templates/' . $this->slug);
-    }
-
     public function getTemplatePathAttribute(): string
     {
         $manifest = $this->readManifest();
-        $file     = $manifest['template'] ?? 'template.html';
-        return $this->template_dir . '/' . $file;
+
+        return storage_path("app/templates/{$this->slug}/" . ($manifest['template'] ?? 'template.html'));
     }
 
+    /**
+     * Real form.json path — same rationale as getTemplatePathAttribute().
+     */
     public function getConfigPathAttribute(): string
     {
         $manifest = $this->readManifest();
-        $file     = $manifest['form'] ?? 'form.json';
-        return $this->template_dir . '/' . $file;
+
+        return storage_path("app/templates/{$this->slug}/" . ($manifest['form'] ?? 'form.json'));
     }
 
-    /**
-     * Whether this type should be hidden from the sidebar.
-     * Controlled by "sidebar_hidden": true in manifest.json.
-     * Used to hide legacy standalone-language variants (e.g. facture-fr, quote-fr)
-     * that have been superseded by a multilingual template.
-     */
-    public function getSidebarHiddenAttribute(): bool
-    {
-        return (bool) ($this->readManifest()['sidebar_hidden'] ?? false);
-    }
-
-    /**
-     * The label shown in the sidebar — falls back to name.
-     */
-    public function getSidebarLabelDisplayAttribute(): string
-    {
-        return $this->sidebar_label ?: $this->name;
-    }
-
-    /**
-     * The Bootstrap Icon class for this template.
-     */
-    public function getIconDisplayAttribute(): string
-    {
-        return $this->icon ?: 'bi-file-earmark-text';
-    }
-
-    /**
-     * Read the manifest.json for this template.
-     * Public so controllers (TemplateController, DocumentController) can call it.
-     */
     public function readManifest(): array
     {
-        $path = $this->template_dir . '/manifest.json';
-        if (! file_exists($path)) return [];
+        $path = storage_path("app/templates/{$this->slug}/manifest.json");
+
+        if (! file_exists($path)) {
+            return [];
+        }
+
         return json_decode(file_get_contents($path), true) ?? [];
     }
 }

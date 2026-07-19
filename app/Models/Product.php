@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'reference',
         'name',
@@ -19,12 +22,9 @@ class Product extends Model
         'unit_price' => 'decimal:2',
     ];
 
-    /**
-     * Formatted price for display: e.g. "530.00"
-     */
     public function getFormattedPriceAttribute(): string
     {
-        return number_format((float) $this->unit_price, 2);
+        return number_format((float) $this->unit_price, 2, '.', '');
     }
 
     /**

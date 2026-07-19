@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Http\Controllers\DocumentController;
 use App\Models\DocumentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -46,6 +47,7 @@ class TemplateDataCoverageTest extends TestCase
     /**
      * @dataProvider templateSlugProvider
      */
+    #[DataProvider('templateSlugProvider')]
     public function test_all_form_and_entity_fields_appear_in_generated_document(string $slug): void
     {
         $dir = storage_path("app/templates/{$slug}");

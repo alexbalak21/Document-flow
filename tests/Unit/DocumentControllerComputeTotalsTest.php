@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Http\Controllers\DocumentController;
 use App\Services\DocumentNumberService;
 use App\Services\EntityResolver;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\InteractsWithPrivateMethods;
 use Tests\TestCase;
 
@@ -147,6 +148,7 @@ class DocumentControllerComputeTotalsTest extends TestCase
     /**
      * @dataProvider currencyProvider
      */
+    #[DataProvider('currencyProvider')]
     public function test_currency_symbol_mapping(string $code, string $expectedSymbol): void
     {
         $symbol = $this->callPrivateMethod($this->controller(), 'currencySymbol', [$code]);

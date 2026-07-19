@@ -2,12 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Document extends Model
 {
+    use HasFactory;
+
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_SENT = 'sent';
+    public const STATUS_ACCEPTED = 'accepted';
+    public const STATUS_DECLINED = 'declined';
+    public const STATUS_INVOICED = 'invoiced';
+    public const STATUS_PAID = 'paid';
+
     protected $fillable = [
         'document_type_id',
         'customer_id',
@@ -22,25 +32,6 @@ class Document extends Model
 
     protected $casts = [
         'json_data' => 'array',
-        'version'   => 'integer',
-    ];
-
-    const STATUS_DRAFT     = 'draft';
-    const STATUS_SENT      = 'sent';
-    const STATUS_ACCEPTED  = 'accepted';
-    const STATUS_REJECTED  = 'rejected';
-    const STATUS_INVOICED  = 'invoiced';
-    const STATUS_PAID      = 'paid';
-    const STATUS_CANCELLED = 'cancelled';
-
-    public static array $statusColors = [
-        'draft'     => 'secondary',
-        'sent'      => 'primary',
-        'accepted'  => 'success',
-        'rejected'  => 'danger',
-        'invoiced'  => 'info',
-        'paid'      => 'dark',
-        'cancelled' => 'warning',
     ];
 
     public function documentType(): BelongsTo
@@ -63,28 +54,25 @@ class Document extends Model
         return $this->hasOne(Document::class, 'parent_id');
     }
 
-    public function isQuote(): bool
+    public function canBeEdited(): bool
     {
-        return $this->documentType->slug === 'quote';
-    }
-
-    public function isInvoice(): bool
-    {
-        return $this->documentType->slug === 'invoice';
+        return $this->status === self::STATUS_DRAFT;
     }
 
     public function canBeConverted(): bool
     {
         return $this->isQuote()
             && $this->status === self::STATUS_ACCEPTED
-            && is_null($this->convertedInvoice);
+            && ! $this->convertedInvoice()->exists();
     }
 
-    /**
-     * A document can be edited only when it is in draft status.
-     */
-    public function canBeEdited(): bool
+    public function isQuote(): bool
     {
-        return $this->status === self::STATUS_DRAFT;
+        return $this->documentType?->slug === 'quote';
+    }
+
+    public function isInvoice(): bool
+    {
+        return $this->documentType?->slug === 'invoice';
     }
 }

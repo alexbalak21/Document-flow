@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -64,6 +65,7 @@ class AuthTest extends TestCase
     /**
      * @dataProvider protectedRouteProvider
      */
+    #[DataProvider('protectedRouteProvider')]
     public function test_guests_are_redirected_to_login_for_protected_routes(string $method, string $uri): void
     {
         $response = $this->call($method, $uri);
