@@ -62,4 +62,23 @@ class DocumentType extends Model
 
         return json_decode(file_get_contents($path), true) ?? [];
     }
+
+    /**
+     * Bootstrap icon class for the sidebar nav-group toggle.
+     * Uses the `icon` DB column (kept in sync from manifest.json by the
+     * template scanner) and falls back to a generic document icon if empty.
+     */
+    public function getIconDisplayAttribute(): string
+    {
+        return $this->icon ?: 'bi-file-earmark-text';
+    }
+
+    /**
+     * Label shown in the sidebar. Uses the `sidebar_label` DB column and
+     * falls back to the document type's own name if not set.
+     */
+    public function getSidebarLabelDisplayAttribute(): string
+    {
+        return $this->sidebar_label ?: $this->name;
+    }
 }

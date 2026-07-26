@@ -354,7 +354,7 @@ class DocumentController extends Controller
 
     private function computeTotals(string $slug, array $data): array
     {
-        if (in_array($slug, ['invoice', 'quote', 'proposal', 'proposition', 'delivery-note'])) {
+        if (in_array($slug, ['invoice', 'quote', 'proposal', 'proposition', 'delivery-note', 'facture-fr', 'quote-fr'])) {
             $qty       = (float) ($data['product_quantity']   ?? $data['quantity'] ?? 0);
             $unitPrice = (float) ($data['product_unit_price'] ?? $data['unit_price'] ?? 0);
             $vatRate   = (float) ($data['vat_rate']           ?? 0);
