@@ -5,6 +5,7 @@
 .env.backup
 .env.production
 .env.prod
+.env.dev
 .phpactor.json
 .phpunit.result.cache
 /.codex

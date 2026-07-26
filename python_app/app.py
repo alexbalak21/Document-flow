@@ -1,3 +1,4 @@
+# app.py
 from flask import Flask, request, Response
 from playwright.sync_api import sync_playwright
 
@@ -41,5 +42,7 @@ def generate_pdf():
         headers={'Content-Type': 'application/pdf'}
     )
 
-if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5001, debug=False)
+
+@app.route("/")
+def hello_flask():
+    return "<h1>Hello from Flask!</h1>"
