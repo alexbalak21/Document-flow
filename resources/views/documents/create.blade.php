@@ -41,7 +41,7 @@
 
         {{-- Template-specific sections from form.json --}}
         @foreach($form as $section)
-            <x-document.form-section :section="$section" :prefill="$prefill" />
+            <x-document.form-section :section="$section" :prefill="$prefill" :type-slug="$type->slug" />
         @endforeach
 
         <div class="d-flex gap-2">

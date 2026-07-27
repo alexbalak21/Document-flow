@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
     // Document CRUD
     Route::get('/documents/{slug}/create',   [DocumentController::class, 'create'])->name('documents.create');
+    Route::get('/documents/{slug}/check-number', [DocumentController::class, 'checkNumberUnique'])->name('documents.check-number');
     Route::post('/documents/{slug}/preview', [DocumentController::class, 'preview'])->name('documents.preview');
     Route::post('/documents/{slug}/store',   [DocumentController::class, 'store'])->name('documents.store');
 

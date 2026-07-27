@@ -2,10 +2,12 @@
     x-document.form-section
     Renders a single form.json section (card with fields).
     Props:
-      $section – array with 'section', 'fields', and optional 'i18n_section'
-      $prefill – array of prefilled values
+      $section    – array with 'section', 'fields', and optional 'i18n_section'
+      $prefill    – array of prefilled values
+      $typeSlug   – document type slug, used to call the number-uniqueness check endpoint
+      $documentId – current document id when editing (excluded from the uniqueness check), null when creating
 --}}
-@props(['section', 'prefill' => []])
+@props(['section', 'prefill' => [], 'typeSlug' => null, 'documentId' => null])
 
 @php
     $isOptional = !empty($section['optional']);
@@ -64,6 +66,7 @@
                         // On a brand-new document, default to auto mode.
                         $autoFieldId  = 'auto-' . $field['name'];
                         $startManual  = $val !== '';
+                        $checkUrl     = $typeSlug ? route('documents.check-number', $typeSlug) : null;
                     @endphp
                     <div class="input-group">
                         <span class="input-group-text bg-light text-muted"
@@ -78,11 +81,19 @@
                                class="form-control {{ $startManual ? '' : 'bg-light text-muted fst-italic' }}"
                                value="{{ $val }}"
                                placeholder="{{ $startManual ? '' : 'Will be generated on save' }}"
-                               {{ $startManual ? '' : 'readonly tabindex="-1"' }}>
+                               {{ $startManual ? '' : 'readonly tabindex="-1"' }}
+                               @if($checkUrl)
+                                   data-unique-check="{{ $checkUrl }}"
+                                   data-exclude-id="{{ $documentId }}"
+                               @endif
+                               autocomplete="off">
                     </div>
                     <div class="form-text" id="{{ $autoFieldId }}-hint">
                         {{ $startManual ? 'Editing manually — click the icon to auto-generate instead.' : 'Auto-generated on save — click the icon to type your own number.' }}
                     </div>
+                    @error($field['name'])
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
 
                 @elseif($field['type'] === 'textarea')
                     <textarea name="{{ $field['name'] }}" class="form-control" rows="3"
@@ -172,5 +183,122 @@
             hint.textContent = 'Auto-generated on save — click the icon to type your own number.';
         }
     }
+</script>
+@endonce
+
+@once
+<script>
+(function () {
+    const debounceTimers = new WeakMap();
+
+    function markState(input, state) {
+        // state: 'checking' | 'unique' | 'taken' | 'idle'
+        input.dataset.numberState = state;
+        input.classList.remove('is-invalid', 'is-valid');
+
+        let msg = input.parentElement.parentElement.querySelector('.js-number-check-msg');
+        if (!msg) {
+            msg = document.createElement('div');
+            msg.className = 'js-number-check-msg small mt-1';
+            input.closest('.input-group').insertAdjacentElement('afterend', msg);
+        }
+
+        if (state === 'checking') {
+            msg.textContent = 'Checking availability…';
+            msg.className = 'js-number-check-msg small mt-1 text-muted';
+        } else if (state === 'taken') {
+            input.classList.add('is-invalid');
+            msg.textContent = 'This number is already used by another document of this type.';
+            msg.className = 'js-number-check-msg small mt-1 text-danger fw-semibold';
+        } else if (state === 'unique') {
+            input.classList.add('is-valid');
+            msg.textContent = 'Available.';
+            msg.className = 'js-number-check-msg small mt-1 text-success';
+        } else {
+            msg.textContent = '';
+        }
+    }
+
+    async function checkNumber(input) {
+        const url = input.dataset.uniqueCheck;
+        if (!url) return true;
+
+        const value = input.value.trim();
+        if (value === '') {
+            markState(input, 'idle');
+            return true;
+        }
+
+        markState(input, 'checking');
+
+        const excludeId = input.dataset.excludeId || '';
+        const params = new URLSearchParams({ number: value, exclude_id: excludeId });
+
+        try {
+            const res  = await fetch(url + '?' + params.toString(), {
+                headers: { 'Accept': 'application/json' },
+            });
+            const json = await res.json();
+            markState(input, json.unique ? 'unique' : 'taken');
+            return json.unique;
+        } catch (e) {
+            // Network failure — don't block the user, server-side check
+            // will still catch a real duplicate on submit.
+            markState(input, 'idle');
+            return true;
+        }
+    }
+
+    document.addEventListener('input', function (e) {
+        const input = e.target;
+        if (!input.matches('[data-unique-check]')) return;
+
+        clearTimeout(debounceTimers.get(input));
+        debounceTimers.set(input, setTimeout(() => checkNumber(input), 400));
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-unique-check]').forEach((input) => {
+            const form = input.closest('form');
+            if (!form || form.dataset.uniqueGuardAttached) return;
+            form.dataset.uniqueGuardAttached = '1';
+
+            form.addEventListener('submit', async function (e) {
+                // Re-entry guard: after a successful check we re-trigger the
+                // submit programmatically via requestSubmit(), which fires
+                // this same listener again — let that second pass through.
+                if (form.dataset.uniqueVerified === '1') {
+                    delete form.dataset.uniqueVerified;
+                    return;
+                }
+
+                const fields = Array.from(form.querySelectorAll('[data-unique-check]'))
+                    .filter(el => !el.disabled && el.value.trim() !== '');
+
+                if (fields.length === 0) return; // nothing to check, let it submit
+
+                e.preventDefault();
+                const submitter = e.submitter; // preserves which button was clicked (Save vs Preview)
+
+                const results = await Promise.all(fields.map(checkNumber));
+
+                if (results.every(Boolean)) {
+                    form.dataset.uniqueVerified = '1';
+                    if (submitter && typeof form.requestSubmit === 'function') {
+                        form.requestSubmit(submitter); // respects formaction/formtarget
+                    } else {
+                        form.submit();
+                    }
+                } else {
+                    const firstBad = fields[results.indexOf(false)];
+                    if (firstBad) {
+                        firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstBad.focus();
+                    }
+                }
+            });
+        });
+    });
+})();
 </script>
 @endonce

@@ -145,10 +145,23 @@ class DocumentController extends Controller
         $lang = $request->input('lang', 'en');
         $html = $this->renderHtml($type, $data, $lang);
 
+        $numberKey = $this->resolveNumberKey($slug, $manifest);
+
         $reference = $data[$slug . '_number']
             ?? $data['invoice_number']
             ?? $data['quote_number']
             ?? $document->reference;
+
+        if ($reference === '') {
+            $reference = null;
+        }
+
+        // Server-side double-check: never trust client-side validation alone.
+        if ($reference !== null && $this->isReferenceTaken($type->id, $reference, $document->id)) {
+            return back()
+                ->withInput()
+                ->withErrors([$numberKey => "\"{$reference}\" is already used by another {$type->name}. Please choose a different number."]);
+        }
 
         $document->update([
             'customer_id'   => $linkedIds['customer_id'] ?? $document->customer_id,
@@ -201,6 +214,21 @@ class DocumentController extends Controller
             ?? $data['invoice_number']
             ?? $data['quote_number']
             ?? null;
+
+        // Normalize empty string to null so the DB unique index (which
+        // treats NULL as "not constrained") doesn't collide across
+        // documents that legitimately have no number set.
+        if ($reference === '') {
+            $reference = null;
+        }
+
+        // Server-side double-check: never trust client-side validation alone.
+        // This guarantees uniqueness even if JS was bypassed or disabled.
+        if ($reference !== null && $this->isReferenceTaken($type->id, $reference)) {
+            return back()
+                ->withInput()
+                ->withErrors([$numberKey => "\"{$reference}\" is already used by another {$type->name}. Please choose a different number."]);
+        }
 
         $parentId = session('convert_from');
         session()->forget(['convert_from', 'convert_data', 'convert_customer_id']);
@@ -414,6 +442,38 @@ class DocumentController extends Controller
             'CNY'   => '¥',
             default => $code,
         };
+    }
+
+    /**
+     * AJAX endpoint: check whether a given reference/number is already used
+     * by another document of the same type. Used for live validation on the
+     * create/edit form as the user types.
+     */
+    public function checkNumberUnique(Request $request, string $slug)
+    {
+        $type   = DocumentType::where('slug', $slug)->where('active', true)->firstOrFail();
+        $number = trim((string) $request->query('number', ''));
+        $excludeId = $request->query('exclude_id');
+
+        if ($number === '') {
+            return response()->json(['unique' => true]);
+        }
+
+        $taken = $this->isReferenceTaken($type->id, $number, $excludeId);
+
+        return response()->json(['unique' => ! $taken]);
+    }
+
+    /**
+     * Shared uniqueness check used by both the live AJAX endpoint and the
+     * server-side double-check in store()/update().
+     */
+    private function isReferenceTaken(int $documentTypeId, string $reference, $excludeId = null): bool
+    {
+        return Document::where('document_type_id', $documentTypeId)
+            ->where('reference', $reference)
+            ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+            ->exists();
     }
 
     /**
