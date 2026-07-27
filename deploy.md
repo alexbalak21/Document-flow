@@ -92,8 +92,9 @@ Web root: /home/USERNAME/app/public
 ## 8. Clear Laravel Cache
 
 cd ~/app  
-php artisan config:clear  
-php artisan cache:clear  
+php artisan key:generate
+php artisan config:clear
+php artisan cache:clear
 php artisan route:clear  
 php artisan view:clear  
 php artisan optimize  
@@ -107,9 +108,26 @@ php artisan migrate --force
 
 ---
 
+## 9.5 Create new user
+
+php artisan tinker
+
+App\Models\User::create([
+    'name' => 'Admin',
+    'email' => 'admin@mail.com',
+    'password' => bcrypt('Password123@'),
+]);
+
+
+---
+
 ## 10. Seed Products (Optional)
 
 php artisan db:seed --class=ProductSeeder
+
+---
+
+
 
 ---
 

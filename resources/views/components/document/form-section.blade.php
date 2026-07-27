@@ -57,17 +57,32 @@
                 @endphp
 
                 @if(!empty($field['auto']))
-                    {{-- Auto-generated number: shown as read-only, submitted as hidden --}}
+                    @php
+                        // If editing an existing document, a saved value means
+                        // the number was already assigned — default to manual
+                        // mode so the existing number is visibly editable.
+                        // On a brand-new document, default to auto mode.
+                        $autoFieldId  = 'auto-' . $field['name'];
+                        $startManual  = $val !== '';
+                    @endphp
                     <div class="input-group">
-                        <span class="input-group-text bg-light text-muted" title="Auto-generated">
-                            <i class="bi bi-magic"></i>
+                        <span class="input-group-text bg-light text-muted"
+                              role="button"
+                              title="Toggle auto-generate / manual"
+                              onclick="documentFlowToggleAutoField('{{ $autoFieldId }}')">
+                            <i class="bi {{ $startManual ? 'bi-pencil' : 'bi-magic' }}" id="{{ $autoFieldId }}-icon"></i>
                         </span>
-                        <input type="text" class="form-control bg-light text-muted fst-italic"
-                               value="{{ $val ?: 'Will be generated on save' }}"
-                               readonly tabindex="-1">
+                        <input type="text"
+                               id="{{ $autoFieldId }}-input"
+                               name="{{ $field['name'] }}"
+                               class="form-control {{ $startManual ? '' : 'bg-light text-muted fst-italic' }}"
+                               value="{{ $val }}"
+                               placeholder="{{ $startManual ? '' : 'Will be generated on save' }}"
+                               {{ $startManual ? '' : 'readonly tabindex="-1"' }}>
                     </div>
-                    {{-- Always submit the value — if editing, keep the existing number --}}
-                    <input type="hidden" name="{{ $field['name'] }}" value="{{ $val }}">
+                    <div class="form-text" id="{{ $autoFieldId }}-hint">
+                        {{ $startManual ? 'Editing manually — click the icon to auto-generate instead.' : 'Auto-generated on save — click the icon to type your own number.' }}
+                    </div>
 
                 @elseif($field['type'] === 'textarea')
                     <textarea name="{{ $field['name'] }}" class="form-control" rows="3"
@@ -128,3 +143,34 @@
     </script>
     @endonce
 @endif
+
+@once
+<script>
+    function documentFlowToggleAutoField(fieldId) {
+        const input = document.getElementById(fieldId + '-input');
+        const icon  = document.getElementById(fieldId + '-icon');
+        const hint  = document.getElementById(fieldId + '-hint');
+        if (!input) return;
+
+        const goingManual = input.readOnly; // currently auto -> switching to manual
+
+        if (goingManual) {
+            input.readOnly = false;
+            input.classList.remove('bg-light', 'text-muted', 'fst-italic');
+            input.placeholder = '';
+            input.focus();
+            icon.classList.remove('bi-magic');
+            icon.classList.add('bi-pencil');
+            hint.textContent = 'Editing manually — click the icon to auto-generate instead.';
+        } else {
+            input.readOnly = true;
+            input.value = '';
+            input.classList.add('bg-light', 'text-muted', 'fst-italic');
+            input.placeholder = 'Will be generated on save';
+            icon.classList.remove('bi-pencil');
+            icon.classList.add('bi-magic');
+            hint.textContent = 'Auto-generated on save — click the icon to type your own number.';
+        }
+    }
+</script>
+@endonce

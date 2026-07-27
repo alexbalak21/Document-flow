@@ -50,7 +50,7 @@
         @if (in_array(request()->getHost(), ['localhost', '127.0.0.1']))
         <script>
             document.getElementById('email').value = "admin@mail.com";
-            document.getElementById('password').value = "password123";
+            document.getElementById('password').value = "Password123@";
         </script>
         @endif
 
