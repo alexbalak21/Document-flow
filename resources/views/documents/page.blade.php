@@ -89,41 +89,25 @@
         <a href="{{ route('documents.create', $type->slug) }}">Create the first one.</a>
     </x-ui.empty-state>
 @else
-    <div class="card border-0 shadow-sm">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-3">Reference</th>
-                        <th>Customer</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                        <th class="pe-3 text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($recentDocs as $doc)
-                    <tr>
-                        <td class="ps-3 fw-medium">{{ $doc->reference ?? $doc->title }}</td>
-                        <td class="text-muted">
-                            {{ $doc->customer?->name ?? '—' }}
-                            @if($doc->customer?->company)
-                                <span class="text-muted small">· {{ $doc->customer->company }}</span>
-                            @endif
-                        </td>
-                        <td><x-ui.status-badge :status="$doc->status" /></td>
-                        <td class="text-muted small">{{ $doc->created_at->format('d/m/Y') }}</td>
-                        <td class="pe-3 text-end">
-                            <a href="{{ route('documents.show', $doc) }}" target="_blank"
-                               class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+    <div class="card border-0 shadow-sm" style="overflow:visible;">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Title</th>
+                    <th>Type</th>
+                    <th>Reference</th>
+                    <th>Version</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="pe-3 text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($recentDocs as $doc)
+                    <x-document.table-row :doc="$doc" />
+                @endforeach
+            </tbody>
+        </table>
     </div>
 @endif
 
@@ -137,5 +121,4 @@ function prepareConvert(slug) {
     return true;
 }
 </script>
-
 @endsection

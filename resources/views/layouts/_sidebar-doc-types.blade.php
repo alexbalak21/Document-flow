@@ -14,14 +14,23 @@
 <div class="sidebar-label">{{ $groupName }}</div>
 
 @foreach($groupTypes as $dt)
+@php
+    // A group should stay expanded (and its History link marked active)
+    // whether we're on Overview, New, or History for this document type.
+    // Overview/New URLs start with /documents/{slug}; History is a
+    // separate route (/history?type={slug}) and needs its own check.
+    $onHistoryForType = request()->routeIs('documents.history')
+        && request()->query('type') === $dt->slug;
+    $groupIsActive = request()->is('documents/'.$dt->slug.'*') || $onHistoryForType;
+@endphp
 <div class="nav-group">
-    <div class="nav-group-toggle {{ request()->is('documents/'.$dt->slug.'*') ? 'open' : '' }}"
+    <div class="nav-group-toggle {{ $groupIsActive ? 'open' : '' }}"
          onclick="toggleGroup(this)">
         <i class="bi {{ $dt->icon_display }} icon"></i>
         <span class="nav-text">{{ $dt->sidebar_label_display }}</span>
         <i class="bi bi-chevron-right chevron"></i>
     </div>
-    <div class="nav-group-children collapse {{ request()->is('documents/'.$dt->slug.'*') ? 'show' : '' }}">
+    <div class="nav-group-children collapse {{ $groupIsActive ? 'show' : '' }}">
         <a href="{{ route('documents.page', $dt->slug) }}"
            class="nav-item-link {{ request()->routeIs('documents.page') && request()->route('slug') === $dt->slug ? 'active' : '' }}">
             <i class="bi bi-grid-3x3-gap"></i>
@@ -33,7 +42,7 @@
             <span class="nav-text">New {{ $dt->sidebar_label_display }}</span>
         </a>
         <a href="{{ route('documents.history', ['type' => $dt->slug]) }}"
-           class="nav-item-link">
+           class="nav-item-link {{ $onHistoryForType ? 'active' : '' }}">
             <i class="bi bi-clock-history"></i>
             <span class="nav-text">History</span>
         </a>

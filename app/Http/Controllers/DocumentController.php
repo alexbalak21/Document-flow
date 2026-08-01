@@ -45,7 +45,7 @@ class DocumentController extends Controller
         }
 
         $recentDocs = Document::where('document_type_id', $type->id)
-            ->with('customer')
+            ->with(['customer', 'documentType'])
             ->latest()
             ->take(10)
             ->get();
