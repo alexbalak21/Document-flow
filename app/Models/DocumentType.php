@@ -18,6 +18,12 @@ class DocumentType extends Model
         'template_path',
         'config_path',
         'active',
+        'accent_color',
+        'icon',
+        'sidebar_label',
+        'sidebar_group',
+        'sidebar_group_order',
+        'sidebar_order',
     ];
 
     protected $casts = [
