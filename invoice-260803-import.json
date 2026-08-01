@@ -1,0 +1,49 @@
+{
+    "_template": "invoice",
+    "_version": "2.0",
+    "customer": {
+        "name": "Nutrifocus BV",
+        "company": "Nutrifocus BV",
+        "department": "",
+        "street": "Douglaslaan 25",
+        "city": "Kapellen",
+        "zip": "2950",
+        "country": "Belgium",
+        "phone": "",
+        "email": "",
+        "vat_number": "BE0770458231"
+    },
+    "product": {
+        "reference": "S1200-03-NA",
+        "name": "HPLC-UV analysis of full spectra of nucleotides — free bases (adenine, guanine, hypoxanthine, cytidine, uracil), nucleosides (cytosine, uridine, guanosine, inosine and adenosine), nucleotide monophosphates (CMP, UMP, GMP, IMP, AMP) and nucleic acids RNA and DNA",
+        "product_unit": "Sample DDY0626-1",
+        "quantity": 1,
+        "unit_price": 350.00
+    },
+    "invoice_number": "260803",
+    "invoice_date": "2026-08-03",
+    "due_date": "2026-09-02",
+    "delivery_date": "",
+    "quote_reference": "2606233",
+    "purchase_order": "",
+    "bank_account": "fr",
+    "vat_rate": 0,
+    "delivery_method": "",
+    "delivery_fee": 0,
+    "hs_code": "",
+    "tracking_number": "",
+    "fx_currency": "",
+    "fx_rate": 0,
+    "notes": "",
+    "terms": "Payment by bank transfer within 30 days from receipt of invoice. A fixed recovery fee of €40 applies for late payment. Payment by European/International Transfer(s), in compliance with EU Regulation 2560/2001 concerning cross-border transfers in EUR (up to €50,000).",
+    "_optional_sections": {
+        "delivery_method": "Delivery",
+        "delivery_fee": "Delivery",
+        "hs_code": "Delivery",
+        "tracking_number": "Delivery",
+        "fx_currency": "Foreign Currency",
+        "fx_rate": "Foreign Currency",
+        "notes": "Notes",
+        "terms": "Terms & Conditions"
+    }
+}
