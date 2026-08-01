@@ -28,6 +28,7 @@ class Document extends Model
         'parent_id',
         'json_data',
         'html_snapshot',
+        'pdf_path',
     ];
 
     protected $casts = [

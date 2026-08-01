@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PdfController extends Controller
@@ -19,6 +20,7 @@ class PdfController extends Controller
 
         try {
             $pdf = $this->buildPdf($html);
+            $this->savePdf($document, $pdf);
         } catch (\Throwable $e) {
             if (config('app.debug')) throw $e;
             return back()->with('error', 'PDF generation failed: ' . $e->getMessage());
@@ -42,6 +44,7 @@ class PdfController extends Controller
 
         try {
             $pdf = $this->buildPdf($html);
+            $this->savePdf($document, $pdf);
         } catch (\Throwable $e) {
             if (config('app.debug')) throw $e;
             return back()->with('error', 'PDF generation failed: ' . $e->getMessage());
@@ -74,10 +77,33 @@ class PdfController extends Controller
         return $response->body();
     }
 
-    private function buildFilename(Document $document): string
+    /**
+     * Persist the generated PDF to storage/app/pdf_documents/, overwriting
+     * any previously saved copy for this document, and record the relative
+     * path on the document row.
+     */
+    private function savePdf(Document $document, string $pdf): void
+    {
+        $path = 'pdf_documents/' . $this->buildFilename($document, withId: true);
+
+        Storage::disk('local')->put($path, $pdf);
+
+        // Avoid an extra DB write if the path hasn't changed (e.g. repeated previews)
+        if ($document->pdf_path !== $path) {
+            $document->update(['pdf_path' => $path]);
+        }
+    }
+
+    /**
+     * Build the download filename. Pass withId=true for the on-disk stored
+     * copy so re-generating never collides with another document that
+     * happens to share the same reference/title slug.
+     */
+    private function buildFilename(Document $document, bool $withId = false): string
     {
         $ref  = $document->reference ?? $document->title ?? 'document-' . $document->id;
         $slug = Str::slug($ref);
-        return $slug . '.pdf';
+
+        return $withId ? $document->id . '-' . $slug . '.pdf' : $slug . '.pdf';
     }
 }
