@@ -164,17 +164,36 @@ class EntityResolverTest extends TestCase
         $this->assertSame('New Product Name', $existing->fresh()->name);
     }
 
-    public function test_no_record_created_when_no_selection_and_no_unique_key_value_present(): void
+    public function test_no_record_created_when_no_selection_and_absolutely_no_data_present(): void
     {
         $resolver = new EntityResolver();
         $entities = $resolver->forManifest(['entities' => ['customer']]);
 
-        // No customer_email at all — resolver has nothing to match or create against.
-        $data = ['customer_name' => 'Nameless'];
+        // No fields at all — resolver has nothing to match or create against.
+        $data = [];
 
         $linkedIds = $resolver->saveFromRequest($entities, $data, []);
 
         $this->assertSame(0, Customer::count());
         $this->assertArrayNotHasKey('customer_id', $linkedIds);
+    }
+
+    public function test_customer_is_still_created_when_email_is_missing_but_other_fields_present(): void
+    {
+        // Regression test: "Generate from JSON" payloads often omit customer.email.
+        // The customer must still be saved, not silently dropped.
+        $resolver = new EntityResolver();
+        $entities = $resolver->forManifest(['entities' => ['customer']]);
+
+        $data = ['customer_name' => 'Nameless', 'customer_company' => 'Acme Inc'];
+
+        $linkedIds = $resolver->saveFromRequest($entities, $data, []);
+
+        $this->assertSame(1, Customer::count());
+        $this->assertDatabaseHas('customers', [
+            'name'    => 'Nameless',
+            'company' => 'Acme Inc',
+        ]);
+        $this->assertSame(Customer::first()->id, $linkedIds['customer_id']);
     }
 }

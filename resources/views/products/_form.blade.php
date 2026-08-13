@@ -1,8 +1,9 @@
 <div class="row g-3">
     <div class="col-md-4">
-        <label class="form-label fw-medium">Reference <span class="text-danger">*</span></label>
+        <label class="form-label fw-medium">Reference</label>
         <input type="text" name="reference" class="form-control"
-               value="{{ old('reference', $product->reference ?? '') }}" required>
+               value="{{ old('reference', $product->reference ?? '') }}"
+               placeholder="Leave blank if this line has no catalog reference">
     </div>
     <div class="col-md-8">
         <label class="form-label fw-medium">Name <span class="text-danger">*</span></label>

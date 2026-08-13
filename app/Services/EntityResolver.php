@@ -91,6 +91,9 @@ class EntityResolver
                 // No picker selection — find by unique key or create
                 $uniqueValue = $extracted[$uniqueKey] ?? null;
 
+                // Does the submission actually contain any data for this entity?
+                $hasAnyData = collect($extracted)->contains(fn($v) => $v !== null && $v !== '');
+
                 if (! empty($uniqueValue)) {
                     $record = $model::where($uniqueKey, $uniqueValue)->first();
 
@@ -107,7 +110,17 @@ class EntityResolver
                             fn($v) => $v !== null && $v !== ''
                         ));
                     }
+                } elseif ($hasAnyData) {
+                    // No unique key value (e.g. email left blank on a JSON-generated
+                    // document) but other fields were filled in — we can't dedupe
+                    // against an existing record, so just create a new one rather
+                    // than silently dropping the customer entirely.
+                    $record = $model::create(array_filter(
+                        $extracted,
+                        fn($v) => $v !== null && $v !== ''
+                    ));
                 }
+
             }
 
             if (isset($record)) {

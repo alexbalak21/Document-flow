@@ -21,7 +21,7 @@ return [
         | Bank address: 215 Avenue Jean Jaurès, 69007 Lyon
         */
         'fr' => [
-            'label'          => 'EUR — Banque Populaire (France)',
+            'label'          => 'EUR - Banque Populaire, France',
             'beneficiary'    => env('BANK_FR_BENEFICIARY',    'SAS NOVOCIB'),
             'bank_name'      => env('BANK_FR_NAME',           'BANQUE POPULAIRE AUVERGNE RHÔNE ALPES (BPAURA)'),
             'bank_address'   => env('BANK_FR_ADDRESS',        '215 Avenue Jean Jaurès, 69007 Lyon, France'),

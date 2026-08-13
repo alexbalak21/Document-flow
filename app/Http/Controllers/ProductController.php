@@ -16,7 +16,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'reference'    => ['required', 'string', 'max:80'],
+            'reference'    => ['nullable', 'string', 'max:80'],
             'name'         => ['required', 'string', 'max:255'],
             'description'  => ['nullable', 'string'],
             'product_unit' => ['nullable', 'string', 'max:255'],
@@ -41,7 +41,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'reference'    => ['required', 'string', 'max:80'],
+            'reference'    => ['nullable', 'string', 'max:80'],
             'name'         => ['required', 'string', 'max:255'],
             'description'  => ['nullable', 'string'],
             'product_unit' => ['nullable', 'string', 'max:255'],

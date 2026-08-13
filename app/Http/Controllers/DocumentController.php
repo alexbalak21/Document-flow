@@ -383,17 +383,29 @@ class DocumentController extends Controller
     private function computeTotals(string $slug, array $data): array
     {
         if (in_array($slug, ['invoice', 'quote', 'proposal', 'proposition', 'delivery-note', 'facture-fr', 'quote-fr'])) {
-            $qty       = (float) ($data['product_quantity']   ?? $data['quantity'] ?? 0);
-            $unitPrice = (float) ($data['product_unit_price'] ?? $data['unit_price'] ?? 0);
-            $vatRate   = (float) ($data['vat_rate']           ?? 0);
+            $qty         = (float) ($data['product_quantity']   ?? $data['quantity'] ?? 0);
+            $unitPrice   = (float) ($data['product_unit_price'] ?? $data['unit_price'] ?? 0);
+            $vatRate     = (float) ($data['vat_rate']           ?? 0);
+            $deliveryFee = (float) ($data['delivery_fee']       ?? 0);
 
-            $subtotal  = $qty * $unitPrice;
+            // Line-item amount (product only, excludes delivery/customs fees).
+            $productSubtotal = $qty * $unitPrice;
+
+            // Invoice-level subtotal includes any delivery/customs fee, so it
+            // is reflected in VAT and the grand total rather than silently
+            // dropped from the document.
+            $subtotal  = $productSubtotal + $deliveryFee;
             $vatAmount = $subtotal * ($vatRate / 100);
             $total     = $subtotal + $vatAmount;
 
-            $data['subtotal']   = number_format($subtotal,  2, '.', '');
-            $data['vat_amount'] = number_format($vatAmount, 2, '.', '');
-            $data['total']      = number_format($total,     2, '.', '');
+            $data['product_subtotal'] = number_format($productSubtotal, 2, '.', '');
+            $data['subtotal']         = number_format($subtotal,        2, '.', '');
+            $data['vat_amount']       = number_format($vatAmount,       2, '.', '');
+            $data['total']            = number_format($total,           2, '.', '');
+
+            if (! empty($data['delivery_fee'])) {
+                $data['delivery_fee'] = number_format($deliveryFee, 2, '.', '');
+            }
 
             $lateFee = (float) config('company.late_payment_flat_fee', 0);
             $data['late_payment_flat_fee'] = number_format($lateFee, 2, '.', '');
@@ -402,15 +414,16 @@ class DocumentController extends Controller
             if (! empty($data['fx_currency']) && ! empty($data['fx_rate'])) {
                 $rate = (float) $data['fx_rate'];
 
-                $data['fx_subtotal']   = number_format($subtotal   * $rate, 2, '.', '');
-                $data['fx_vat']        = number_format($vatAmount  * $rate, 2, '.', '');
-                $data['fx_total']      = number_format($total      * $rate, 2, '.', '');
-                $data['fx_unit_price'] = number_format($unitPrice  * $rate, 2, '.', '');
-                $data['fx_symbol']     = $this->currencySymbol($data['fx_currency']);
-                $data['fx_late_fee']   = number_format($lateFee    * $rate, 2, '.', '');
+                $data['fx_product_subtotal'] = number_format($productSubtotal * $rate, 2, '.', '');
+                $data['fx_subtotal']         = number_format($subtotal       * $rate, 2, '.', '');
+                $data['fx_vat']              = number_format($vatAmount      * $rate, 2, '.', '');
+                $data['fx_total']            = number_format($total          * $rate, 2, '.', '');
+                $data['fx_unit_price']       = number_format($unitPrice      * $rate, 2, '.', '');
+                $data['fx_symbol']           = $this->currencySymbol($data['fx_currency']);
+                $data['fx_late_fee']         = number_format($lateFee        * $rate, 2, '.', '');
 
-                if (! empty($data['delivery_fee'])) {
-                    $data['fx_delivery_fee'] = number_format(((float) $data['delivery_fee']) * $rate, 2, '.', '');
+                if ($deliveryFee > 0) {
+                    $data['fx_delivery_fee'] = number_format($deliveryFee * $rate, 2, '.', '');
                 }
 
                 // Non-EUR invoices are always settled via the international account.

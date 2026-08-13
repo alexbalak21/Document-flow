@@ -73,10 +73,10 @@
                               role="button"
                               title="Toggle auto-generate / manual"
                               onclick="documentFlowToggleAutoField('{{ $autoFieldId }}')">
-                            <i class="bi {{ $startManual ? 'bi-pencil' : 'bi-magic' }}" id="{{ $autoFieldId }}-icon"></i>
+                            <i class="bi {{ $startManual ? 'bi-magic' : 'bi-pencil' }}" id="{{ $autoFieldId }}-icon"></i>
                         </span>
                         <input type="text"
-                               id="{{ $autoFieldId }}-input"
+                               id="{{ $autoFieldId }}-input"    
                                name="{{ $field['name'] }}"
                                class="form-control {{ $startManual ? '' : 'bg-light text-muted fst-italic' }}"
                                value="{{ $val }}"
@@ -170,16 +170,16 @@
             input.classList.remove('bg-light', 'text-muted', 'fst-italic');
             input.placeholder = '';
             input.focus();
-            icon.classList.remove('bi-magic');
-            icon.classList.add('bi-pencil');
+            icon.classList.remove('bi-pencil');
+            icon.classList.add('bi-magic');
             hint.textContent = 'Editing manually — click the icon to auto-generate instead.';
         } else {
             input.readOnly = true;
             input.value = '';
             input.classList.add('bg-light', 'text-muted', 'fst-italic');
             input.placeholder = 'Will be generated on save';
-            icon.classList.remove('bi-pencil');
-            icon.classList.add('bi-magic');
+            icon.classList.remove('bi-magic');
+            icon.classList.add('bi-pencil');
             hint.textContent = 'Auto-generated on save — click the icon to type your own number.';
         }
     }
