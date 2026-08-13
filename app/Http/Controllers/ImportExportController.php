@@ -44,15 +44,21 @@ class ImportExportController extends Controller
             ];
         }
 
-        // Product fields
+        // Product fields — an array so a document can carry multiple line items.
         if (in_array('product', $manifest['entities'] ?? [])) {
-            $model['product'] = [
-                'reference'    => '',
-                'name'         => '',
-                'product_unit' => '',
-                'quantity'     => 1,
-                'unit_price'   => 0.00,
+            $model['products'] = [
+                [
+                    'reference'    => '',
+                    'name'         => '',
+                    'product_unit' => '',
+                    'quantity'     => 1,
+                    'unit_price'   => 0.00,
+                ],
             ];
+
+            // Document-level discount (applies to the products subtotal).
+            $model['discount_type']  = ''; // "percent" or "amount" (leave blank for no discount)
+            $model['discount_value'] = 0;
         }
 
         // Document-specific fields from form.json
@@ -135,7 +141,7 @@ class ImportExportController extends Controller
             }
         }
 
-        // Flatten customer/product nested keys to match form field names
+        // Flatten customer nested keys to match form field names
         $flat = [];
 
         if (isset($data['customer']) && is_array($data['customer'])) {
@@ -144,23 +150,26 @@ class ImportExportController extends Controller
             }
         }
 
-        if (isset($data['product']) && is_array($data['product'])) {
-            foreach ($data['product'] as $k => $v) {
-                // product_unit  -> product_unit   (not product_product_unit)
-                // quantity      -> product_quantity
-                // unit_price    -> product_unit_price
-                $mapped = match($k) {
-                    'quantity'     => 'product_quantity',
-                    'unit_price'   => 'product_unit_price',
-                    'product_unit' => 'product_unit',
-                    default        => 'product_' . $k,
-                };
-                $flat[$mapped] = $v;
+        // Products: prefer the new "products" array (multiple line items).
+        // Still accept the legacy singular "product" object for JSON files
+        // exported before multi-product support existed.
+        $items = [];
+        $rawProducts = $data['products'] ?? $data['items'] ?? (isset($data['product']) ? [$data['product']] : []);
+        if (is_array($rawProducts)) {
+            foreach ($rawProducts as $p) {
+                if (! is_array($p)) continue;
+                $items[] = [
+                    'reference'  => $p['reference']    ?? '',
+                    'name'       => $p['name']          ?? '',
+                    'unit'       => $p['product_unit']  ?? $p['unit'] ?? '',
+                    'quantity'   => $p['quantity']       ?? 1,
+                    'unit_price' => $p['unit_price']     ?? 0,
+                ];
             }
         }
 
         // Copy top-level fields (skip meta keys and nested objects)
-        $skip = ['_template', '_version', '_reference', '_status', '_optional_sections', 'customer', 'product'];
+        $skip = ['_template', '_version', '_reference', '_status', '_optional_sections', 'customer', 'product', 'products'];
         foreach ($data as $k => $v) {
             if (in_array($k, $skip) || is_array($v)) continue;
             $flat[$k] = $v;
@@ -178,6 +187,7 @@ class ImportExportController extends Controller
 
         return response()->json([
             'fields'               => $flat,
+            'items'                => $items,
             'sections_to_activate' => $sectionsToActivate,
         ]);
     }

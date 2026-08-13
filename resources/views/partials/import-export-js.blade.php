@@ -45,7 +45,7 @@ async function sendImport(text) {
         });
     }
 
-    // Step 2 — Fill all fields
+    // Step 2 — Fill all scalar fields
     let filled = 0;
     for (const [name, value] of Object.entries(json.fields)) {
         const el = document.querySelector(`[name="${name}"]`);
@@ -53,6 +53,21 @@ async function sendImport(text) {
             el.value = value ?? '';
             filled++;
         }
+    }
+
+    // Step 3 — Rebuild the line items table from the imported products,
+    // replacing whatever rows are currently there.
+    if (Array.isArray(json.items) && typeof addLineItem === 'function') {
+        document.getElementById('line-items-body')?.querySelectorAll('.line-item-row')
+            .forEach(row => row.remove());
+        json.items.forEach(item => addLineItem(item));
+        filled += json.items.length;
+    }
+
+    // Discount fields don't live under [name="discount_type"] uniformly
+    // enough to skip a recalc — make sure the preview reflects the import.
+    if (typeof recalcLineItems === 'function') {
+        recalcLineItems();
     }
 
     showImportSuccess(`${filled} field(s) filled from JSON.`);
