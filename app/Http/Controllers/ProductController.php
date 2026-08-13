@@ -13,6 +13,38 @@ class ProductController extends Controller
         return view('products.index', compact('products'));
     }
 
+    /**
+     * Return products as JSON (used by the searchable form picker).
+     * Supports ?q= to filter by reference / name.
+     */
+    public function list(Request $request)
+    {
+        $query = Product::query()->orderBy('name');
+
+        if ($search = trim((string) $request->query('q'))) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('reference', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->limit(50)->get([
+            'id', 'reference', 'name', 'description', 'product_unit', 'unit_price',
+        ]);
+
+        return response()->json($products->map(function ($p) {
+            return [
+                'id'               => $p->id,
+                'reference'        => $p->reference,
+                'name'             => $p->name,
+                'description'      => $p->description,
+                'product_unit'     => $p->product_unit,
+                'unit_price'       => $p->unit_price,
+                'formatted_price'  => $p->formatted_price,
+            ];
+        }));
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

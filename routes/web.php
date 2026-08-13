@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\DocumentController;
@@ -20,6 +21,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Password
+    Route::put('/settings/password', [PasswordController::class, 'update'])->name('password.update');
 
     // Templates
     Route::get('/templates', [TemplateController::class, 'index'])->name('templates.index');
@@ -59,6 +63,7 @@ Route::middleware('auth')->group(function () {
 
     // Products
     Route::get('/products',                  [ProductController::class, 'index'])->name('products.index');
+    Route::get('/api/products',              [ProductController::class, 'list'])->name('products.list');
     Route::post('/products',                 [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit',   [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}',        [ProductController::class, 'update'])->name('products.update');

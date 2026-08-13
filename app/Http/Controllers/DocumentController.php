@@ -383,25 +383,91 @@ class DocumentController extends Controller
     private function computeTotals(string $slug, array $data): array
     {
         if (in_array($slug, ['invoice', 'quote', 'proposal', 'proposition', 'delivery-note', 'facture-fr', 'quote-fr'])) {
-            $qty         = (float) ($data['product_quantity']   ?? $data['quantity'] ?? 0);
-            $unitPrice   = (float) ($data['product_unit_price'] ?? $data['unit_price'] ?? 0);
-            $vatRate     = (float) ($data['vat_rate']           ?? 0);
-            $deliveryFee = (float) ($data['delivery_fee']       ?? 0);
+            $items = $data['items'] ?? [];
 
-            // Line-item amount (product only, excludes delivery/customs fees).
-            $productSubtotal = $qty * $unitPrice;
+            // Legacy fallback for documents / callers still using the old
+            // single-product fields instead of the items[] array.
+            if (empty($items) && (! empty($data['product_name']) || ! empty($data['product_unit_price']))) {
+                $items = [[
+                    'reference'  => $data['product_reference']   ?? '',
+                    'name'       => $data['product_name']        ?? '',
+                    'unit'       => $data['product_unit']        ?? '',
+                    'quantity'   => $data['product_quantity']    ?? $data['quantity'] ?? 1,
+                    'unit_price' => $data['product_unit_price']  ?? $data['unit_price'] ?? 0,
+                ]];
+            }
+
+            // Normalize each row, compute its line total, and drop empty rows
+            // (e.g. a blank line the user added then didn't fill in).
+            $normalizedItems  = [];
+            $productSubtotal  = 0.0;
+            foreach ($items as $item) {
+                $name = trim((string) ($item['name'] ?? ''));
+                if ($name === '') {
+                    continue;
+                }
+                $qty       = (float) ($item['quantity']   ?? 0);
+                $price     = (float) ($item['unit_price'] ?? 0);
+                $lineTotal = $qty * $price;
+                $productSubtotal += $lineTotal;
+
+                $normalizedItems[] = [
+                    'reference'  => (string) ($item['reference'] ?? ''),
+                    'name'       => $name,
+                    'unit'       => (string) ($item['unit'] ?? ''),
+                    'quantity'   => $qty,
+                    'unit_price' => number_format($price, 2, '.', ''),
+                    'line_total' => number_format($lineTotal, 2, '.', ''),
+                ];
+            }
+            $data['items'] = $normalizedItems;
+
+            // Mirror the first line into the legacy product_* keys so any
+            // template or integration still reading a single product keeps
+            // working even though the document now carries several.
+            $first = $normalizedItems[0] ?? null;
+            $data['product_reference']  = $first['reference']  ?? ($data['product_reference'] ?? '');
+            $data['product_name']       = $first['name']       ?? ($data['product_name'] ?? '');
+            $data['product_unit']       = $first['unit']       ?? ($data['product_unit'] ?? '');
+            $data['product_quantity']   = $first['quantity']   ?? ($data['product_quantity'] ?? '');
+            $data['product_unit_price'] = $first['unit_price'] ?? ($data['product_unit_price'] ?? '');
+
+            $vatRate     = (float) ($data['vat_rate']     ?? 0);
+            $deliveryFee = (float) ($data['delivery_fee'] ?? 0);
+
+            // Document-level discount, applied to the product subtotal
+            // before delivery fees and VAT.
+            $discountType   = $data['discount_type']  ?? '';
+            $discountValue  = (float) ($data['discount_value'] ?? 0);
+            $discountAmount = 0.0;
+            if ($discountValue > 0 && in_array($discountType, ['percent', 'amount'], true)) {
+                $discountAmount = $discountType === 'percent'
+                    ? $productSubtotal * ($discountValue / 100)
+                    : $discountValue;
+                // Never let the discount exceed the goods it applies to.
+                $discountAmount = max(0.0, min($discountAmount, $productSubtotal));
+            }
+
+            $netProductSubtotal = $productSubtotal - $discountAmount;
 
             // Invoice-level subtotal includes any delivery/customs fee, so it
             // is reflected in VAT and the grand total rather than silently
             // dropped from the document.
-            $subtotal  = $productSubtotal + $deliveryFee;
+            $subtotal  = $netProductSubtotal + $deliveryFee;
             $vatAmount = $subtotal * ($vatRate / 100);
             $total     = $subtotal + $vatAmount;
 
             $data['product_subtotal'] = number_format($productSubtotal, 2, '.', '');
-            $data['subtotal']         = number_format($subtotal,        2, '.', '');
-            $data['vat_amount']       = number_format($vatAmount,       2, '.', '');
-            $data['total']            = number_format($total,           2, '.', '');
+            $data['has_discount']     = $discountAmount > 0 ? '1' : '';
+            $data['discount_type']    = $discountType;
+            $data['discount_value']   = $discountValue > 0 ? rtrim(rtrim(number_format($discountValue, 2, '.', ''), '0'), '.') : '';
+            $data['discount_amount']  = number_format($discountAmount, 2, '.', '');
+            $data['discount_label']   = $discountType === 'percent'
+                ? 'Discount (' . $data['discount_value'] . '%)'
+                : 'Discount';
+            $data['subtotal']         = number_format($subtotal,  2, '.', '');
+            $data['vat_amount']       = number_format($vatAmount, 2, '.', '');
+            $data['total']            = number_format($total,     2, '.', '');
 
             if (! empty($data['delivery_fee'])) {
                 $data['delivery_fee'] = number_format($deliveryFee, 2, '.', '');
@@ -414,13 +480,13 @@ class DocumentController extends Controller
             if (! empty($data['fx_currency']) && ! empty($data['fx_rate'])) {
                 $rate = (float) $data['fx_rate'];
 
-                $data['fx_product_subtotal'] = number_format($productSubtotal * $rate, 2, '.', '');
-                $data['fx_subtotal']         = number_format($subtotal       * $rate, 2, '.', '');
-                $data['fx_vat']              = number_format($vatAmount      * $rate, 2, '.', '');
-                $data['fx_total']            = number_format($total          * $rate, 2, '.', '');
-                $data['fx_unit_price']       = number_format($unitPrice      * $rate, 2, '.', '');
-                $data['fx_symbol']           = $this->currencySymbol($data['fx_currency']);
-                $data['fx_late_fee']         = number_format($lateFee        * $rate, 2, '.', '');
+                $data['fx_product_subtotal']  = number_format($productSubtotal * $rate, 2, '.', '');
+                $data['fx_discount_amount']   = number_format($discountAmount  * $rate, 2, '.', '');
+                $data['fx_subtotal']          = number_format($subtotal       * $rate, 2, '.', '');
+                $data['fx_vat']               = number_format($vatAmount      * $rate, 2, '.', '');
+                $data['fx_total']             = number_format($total          * $rate, 2, '.', '');
+                $data['fx_symbol']            = $this->currencySymbol($data['fx_currency']);
+                $data['fx_late_fee']          = number_format($lateFee        * $rate, 2, '.', '');
 
                 if ($deliveryFee > 0) {
                     $data['fx_delivery_fee'] = number_format($deliveryFee * $rate, 2, '.', '');
@@ -434,9 +500,72 @@ class DocumentController extends Controller
             // {{^section}} "unless"), so provide an explicit flag for the
             // non-FX ("normal") rendering path.
             $data['no_fx'] = empty($data['fx_currency']) ? '1' : '';
+
+            // Pre-render the <tr> rows for the items table. These are raw
+            // HTML (not escaped) and injected verbatim by renderHtml().
+            $currencySymbol = $this->companyCurrencySymbol();
+            $data['line_items_rows']    = $this->renderLineItemsRows($normalizedItems, false, $data, $currencySymbol);
+            $data['line_items_rows_fx'] = $this->renderLineItemsRows($normalizedItems, true,  $data, $currencySymbol);
         }
 
         return $data;
+    }
+
+    /**
+     * Build the raw <tr> HTML for each line item. Returned HTML is injected
+     * verbatim (not escaped) by renderHtml() via the {{line_items_rows}} /
+     * {{line_items_rows_fx}} placeholders.
+     */
+    private function renderLineItemsRows(array $items, bool $fx, array $data, string $currencySymbol): string
+    {
+        if (empty($items)) {
+            return '';
+        }
+
+        $showRef  = ! empty($data['product_reference']);
+        $fxRate   = (float) ($data['fx_rate'] ?? 0);
+        $fxSymbol = ! empty($data['fx_currency']) ? $this->currencySymbol($data['fx_currency']) : '';
+
+        $rows = '';
+        foreach ($items as $item) {
+            $name  = htmlspecialchars($item['name']);
+            $unit  = htmlspecialchars($item['unit']);
+            $ref   = htmlspecialchars($item['reference']);
+            $qty   = htmlspecialchars(rtrim(rtrim(number_format((float) $item['quantity'], 2, '.', ''), '0'), '.'));
+            $price = htmlspecialchars($item['unit_price']);
+            $total = htmlspecialchars($item['line_total']);
+
+            $unitHtml = $unit !== '' ? '<br><span class="item-description">' . $unit . '</span>' : '';
+            $refCell  = $showRef ? "<td>{$ref}</td>" : '';
+
+            $fxCell = '';
+            if ($fx) {
+                $fxTotal = htmlspecialchars(number_format(((float) $item['line_total']) * $fxRate, 2, '.', ''));
+                $fxCell  = "<td class=\"right fx-col\" style=\"padding-right:8px;\">{$fxSymbol} {$fxTotal}</td>";
+            }
+
+            $rows .= "<tr><td>{$name}{$unitHtml}</td>{$refCell}"
+                . "<td class=\"center\">{$currencySymbol} {$price}</td>"
+                . "<td class=\"center\">{$qty}</td>"
+                . "<td class=\"right\">{$currencySymbol} {$total}</td>{$fxCell}</tr>";
+        }
+
+        return $rows;
+    }
+
+    /**
+     * The company's default currency symbol, read directly from
+     * storage/app/company.json (used before renderHtml() would otherwise
+     * inject it, since totals are computed first).
+     */
+    private function companyCurrencySymbol(): string
+    {
+        $companyPath = storage_path('app/company.json');
+        $company = file_exists($companyPath)
+            ? (json_decode(file_get_contents($companyPath), true) ?? [])
+            : [];
+
+        return $company['default_currency_symbol'] ?? '€';
     }
 
     /**
@@ -600,7 +729,11 @@ class DocumentController extends Controller
             $html = preg_replace_callback(
                 '/\{\{#(\w+)\}\}(.*?)\{\{\/\1\}\}/s',
                 function ($matches) use ($data) {
-                    $value = trim($data[$matches[1]] ?? '');
+                    $raw = $data[$matches[1]] ?? '';
+                    if (is_array($raw)) {
+                        return ! empty($raw) ? $matches[2] : '';
+                    }
+                    $value = trim((string) $raw);
                     return $value !== '' ? $matches[2] : '';
                 },
                 $html
@@ -610,7 +743,21 @@ class DocumentController extends Controller
             }
         }
 
+        // These keys hold pre-built, already-escaped HTML (the line item
+        // rows) and must be injected verbatim, not passed through
+        // htmlspecialchars() with the rest of $data below.
+        $rawHtmlKeys = ['line_items_rows', 'line_items_rows_fx'];
+        foreach ($rawHtmlKeys as $key) {
+            if (isset($data[$key])) {
+                $html = str_replace('{{' . $key . '}}', $data[$key], $html);
+                unset($data[$key]);
+            }
+        }
+
         foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                continue; // e.g. 'items' — not a template placeholder itself
+            }
             $html = str_replace('{{' . $key . '}}', htmlspecialchars((string) $value), $html);
         }
 

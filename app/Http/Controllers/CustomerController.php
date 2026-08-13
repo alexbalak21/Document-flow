@@ -17,15 +17,28 @@ class CustomerController extends Controller
     }
 
     /**
-     * Return all customers as JSON (used by the form picker).
+     * Return customers as JSON (used by the searchable form picker).
+     * Supports ?q= to filter by name / company / email.
      */
-    public function list()
+    public function list(Request $request)
     {
-        $customers = Customer::orderBy('name')->get([
+        $query = Customer::query()->orderBy('name');
+
+        if ($search = trim((string) $request->query('q'))) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('company', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('vat_number', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->limit(50)->get([
             'id', 'name', 'company', 'department',
             'street', 'city', 'zip', 'country',
             'phone', 'email', 'vat_number',
         ]);
+
         return response()->json($customers);
     }
 
